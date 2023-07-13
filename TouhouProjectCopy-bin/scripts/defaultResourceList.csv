@@ -1,0 +1,7 @@
+"RESOURCE_TYPE(1:텍스쳐, 2:폰트, 3: 사운드 클립, 4: 애니메이션)",RESOURCE_PATH
+3,Animations/DownIdle.csv
+3,Animations/DownMove.csv
+3,Animations/UpIdle.csv
+3,Animations/UpMove.csv
+3,Animations/SideIdle.csv
+3,Animations/SideMove.csv
