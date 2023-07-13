@@ -1,9 +1,16 @@
 #pragma once
 #include "Scene.h"
+#include "Bullet.h"
+#include "ObjectPool.h"
+
+class Player;
+
 class SceneGame : public Scene
 {
 protected:
+	Player* player;
 
+	ObjectPool<Bullet> poolBullet;
 public:
 	SceneGame();
 	virtual ~SceneGame() override = default;
@@ -16,5 +23,8 @@ public:
 
 	virtual void Update(float dt) override;
 	virtual void Draw(sf::RenderWindow& window) override;
+
+	void GetBullet(Bullet*& bullet);
+	void PoolActive(Bullet* bullet);
 };
 

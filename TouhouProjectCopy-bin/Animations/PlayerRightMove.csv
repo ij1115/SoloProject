@@ -1,0 +1,12 @@
+ID,FPS,LOOPTYPE,,
+PlayerRightMove,10,0,,
+,,,,
+TEXTURE ID,LEFT,TOP,WIDTH,HEIGHT
+graphics/Player.png,3,99,30,45
+graphics/Player.png,36,99,28,44
+graphics/Player.png,67,99,28,44
+graphics/Player.png,98,100,29,42
+graphics/Player.png,130,100,29,42
+graphics/Player.png,162,100,29,43
+graphics/Player.png,194,100,29,43
+graphics/Player.png,225,100,30,43

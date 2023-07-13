@@ -3,22 +3,24 @@
 #include "AnimationController.h"
 #include "ShapeGo.h"
 
+class Bullet;
+
 class Player : public SpriteGo
 {
-public:
-	struct ClipInfo
-	{
-		std::string idle;
-		std::string move;
-		bool flipX = false;
-		sf::Vector2f point;
-	};
 protected:
 	AnimationController animation;
 
-	std::vector<ClipInfo> clipInfos;
-	ClipInfo currentClipInfo;
-	
+	sf::Vector2f dir;
+
+	float speed=600.f;
+	float timer = 0.f;
+	float attackDelay = 0.05f;
+
+	int boom = 0;
+
+	sf::IntRect playerSkin;
+
+	Bullet* bullet;
 public:
 	Player(const std::string& textureId= "", const std::string& n= "")
 		: SpriteGo(textureId,n) {}
@@ -29,5 +31,8 @@ public:
 	
 	virtual void Update(float dt) override;
 
+	void MovingLimit();
+	void Move();
+	void Fire();
 };
 

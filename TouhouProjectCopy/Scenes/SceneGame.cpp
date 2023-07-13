@@ -18,6 +18,9 @@ void SceneGame::Init()
 {
 	Release();
 
+	Player* player = (Player*)AddGo(new Player());
+	player->sortLayer = 2;
+
 	for (auto go : gameObjects)
 	{
 		go->Init();
@@ -34,6 +37,10 @@ void SceneGame::Release()
 
 void SceneGame::Enter()
 {
+	auto size = FRAMEWORK.GetWindowSize();
+	worldView.setSize(size);
+	worldView.setCenter(0.f, 0.f);
+	
 	Scene::Enter();
 }
 
@@ -50,4 +57,15 @@ void SceneGame::Update(float dt)
 void SceneGame::Draw(sf::RenderWindow& window)
 {
 	Scene::Draw(window);
+}
+
+void SceneGame::GetBullet(Bullet*& bullet)
+{
+	bullet = poolBullet.Get();
+}
+
+void SceneGame::PoolActive(Bullet* bullet)
+{
+	RemoveGo(bullet);
+	poolBullet.Return(bullet);
 }
