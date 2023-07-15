@@ -1,6 +1,7 @@
 #pragma once
 #include "Utils.h"
 
+
 class GameObject
 {
 protected:
@@ -8,6 +9,8 @@ protected:
 	std::string name;
 	bool isActive = true;
 	Origins origin = Origins::TL;
+
+	
 
 public:
 

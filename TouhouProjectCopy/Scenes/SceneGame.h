@@ -1,14 +1,16 @@
 #pragma once
 #include "Scene.h"
-#include "Bullet.h"
 #include "ObjectPool.h"
 
+class SpriteGo;
 class Player;
+class Bullet;
 
 class SceneGame : public Scene
 {
 protected:
 	Player* player;
+	SpriteGo* backGround;
 
 	ObjectPool<Bullet> poolBullet;
 public:
@@ -25,6 +27,5 @@ public:
 	virtual void Draw(sf::RenderWindow& window) override;
 
 	void GetBullet(Bullet*& bullet);
-	void PoolActive(Bullet* bullet);
 };
 

@@ -1,0 +1,8 @@
+ID,FPS,LOOPTYPE,,
+BossIdle,10,1,,
+,,,,
+TEXTURE ID,LEFT,TOP,WIDTH,HEIGHT
+graphics/Boss_Utsuho_Reiuji.png,11,47,76,92
+graphics/Boss_Utsuho_Reiuji.png,106,51,77,88
+graphics/Boss_Utsuho_Reiuji.png,198,57,86,82
+graphics/Boss_Utsuho_Reiuji.png,298,51,77,88

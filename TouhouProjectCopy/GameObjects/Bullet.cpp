@@ -1,0 +1,151 @@
+#include "stdafx.h"
+#include "Bullet.h"
+#include "Framework.h"
+#include "SceneMgr.h"
+#include "SceneGame.h"
+#include "ResourceMgr.h"
+
+Bullet::Bullet(const std::string& textureId, const std::string& n)
+	:SpriteGo(textureId,n)
+{
+}
+
+Bullet::~Bullet()
+{
+}
+
+void Bullet::Init()
+{
+	SpriteGo::Init();
+
+	view = FRAMEWORK.GetWindowSize();
+
+	SetOrigin(Origins::MC);
+}
+
+
+void Bullet::Reset()
+{
+	SpriteGo::Reset();
+
+	float speed = 0.f;
+	useDelayTime = true;
+	useRotate = true;
+	sprite.setRotation(0.0f);
+	dir = { 0.f,0.f };
+
+	deepSleep = 0.5f;
+	sortLayer = 1;
+}
+
+void Bullet::Update(float dt)
+{
+	SpriteGo::Update(dt);
+
+	delayTime -= dt;
+	deepSleep -= dt;
+
+	sprite.rotate(720*dt);
+
+	if (deepSleep < deepSleepTimer && !sleepOn)
+	{
+		sleepOn = true;
+	}
+
+	if (useRotate && rotateCount > 0 && move && sleepOn)
+	{
+		--rotateCount;
+		BulletRotate(rotateRadin);
+	}
+
+	if (useDelayTime&& delayCount>0&&move&& sleepOn)
+	{	
+		move = false;
+		temp = dir;
+		dir = { 0.f,0.f };
+		--delayCount;
+		delayTime = sleepTime;
+	
+	}
+	else if (delayTime < 0.f && !move)
+	{
+		dir = temp;
+		move = true;
+		BulletRotate(-rotateRadin);
+	}
+
+	SetPosition(position + dir * speed * dt);
+
+	Destroy();
+
+}
+
+void Bullet::SetPool(ObjectPool<Bullet>* bulletPool)
+{
+	this->pool = bulletPool;
+}
+
+void Bullet::BulletRotate(float count)
+{
+	float radian = count * M_PI / 180;
+	dir.x = dir.x * std::cos(radian) - dir.y * std::sin(radian);
+	dir.y = dir.x * std::sin(radian) + dir.y * std::cos(radian);
+}
+
+void Bullet::BulletStatPos(sf::Vector2f Pos)
+{
+	SetPosition(Pos);
+}
+
+void Bullet::SetDir(sf::Vector2f Dir)
+{
+	this->dir = Utils::Normalize(Dir);
+}
+
+
+void Bullet::SetBulletType(Types pick)
+{
+	this->type = pick;
+
+	if(user==User::Player)
+	{
+		if (type == Types::Shape)
+		{
+			textureId = "graphics/Player.png";
+			sprite.setTexture(*RESOURCE_MGR.GetTexture("graphics/Player.png"));
+			sf::FloatRect tRect;
+			tRect.left = 1.f;
+			tRect.top = 147.f;
+			tRect.width = 16.f;
+			tRect.height = 12.f;
+			sprite.setTextureRect((sf::IntRect)tRect);
+		}
+	}
+
+}
+
+void Bullet::SetUser(User pick)
+{
+	user = pick;
+}
+
+void Bullet::SetRoCount(int i)
+{
+	rotateCount = i;
+}
+
+void Bullet::SetDelCount(int i)
+{
+	delayCount = i;
+}
+
+void Bullet::Destroy()
+{
+	if ((position.x > 100 || position.x < -(view.x / 2)) ||
+		(position.y > (view.y / 2)|| position.y < -(view.y / 2)))
+	{
+		SCENE_MGR.GetCurrScene()->RemoveGo(this);
+		pool->Return(this);
+		std::cout << pool->GetUseList().size() << std::endl;
+	}
+}

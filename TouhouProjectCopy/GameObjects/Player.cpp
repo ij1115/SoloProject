@@ -6,6 +6,7 @@
 #include "scene.h"
 #include "SceneGame.h"
 #include "SceneMgr.h"
+#include "Bullet.h"
 
 void Player::Init()
 {
@@ -15,17 +16,17 @@ void Player::Init()
 
 	animation.SetTarget(&sprite);
 
-	this->sprite.setScale(1.8f, 1.8f);
+	this->sprite.setScale(2.2f, 2.2f);
 
 	SetOrigin(Origins::MC);
 }
 
 void Player::Reset()
 {
-	SetPosition(0.f, 0.f);
+	SetPosition(-(FRAMEWORK.GetWindowSize().x / 4), +(FRAMEWORK.GetWindowSize().y/2));
 	animation.Play("PlayerIdle");
 	SetOrigin(origin);
-	speed = 500.f;
+	speed = 600.f;
 	timer = attackDelay;
 }
 
@@ -69,27 +70,28 @@ void Player::MovingLimit()
 {
 	playerSkin = this->sprite.getTextureRect();
 
-	if (position.x < -(FRAMEWORK.GetWindowSize().x / 2) + (playerSkin.width / 2))
+	if (position.x < -(FRAMEWORK.GetWindowSize().x / 2)+ 100 + (playerSkin.width / 2))
 	{
-		position.x = -(FRAMEWORK.GetWindowSize().x / 2) + (playerSkin.width / 2);
+		position.x = -(FRAMEWORK.GetWindowSize().x / 2) +100+ (playerSkin.width / 2);
 	}
-	else if (position.x > 0 + (playerSkin.width / 2))
+	else if (position.x >70 + (playerSkin.width / 2))
 	{
-		position.x = 0 + playerSkin.width / 2;
+		position.x =70 + playerSkin.width / 2;
 	}
-
-	if (position.y > (FRAMEWORK.GetWindowSize().y / 2) - (playerSkin.height / 2))
+	if (position.y > (FRAMEWORK.GetWindowSize().y / 2) - 50 - (playerSkin.height / 2))
 	{
-		position.y = (FRAMEWORK.GetWindowSize().y / 2) - (playerSkin.height / 2);
+		position.y = (FRAMEWORK.GetWindowSize().y / 2) - 50 - (playerSkin.height / 2);
 	}
-	else if (position.y < -(FRAMEWORK.GetWindowSize().y / 2) + (playerSkin.height / 2))
+	else if (position.y < -(FRAMEWORK.GetWindowSize().y / 2) + 50 + (playerSkin.height / 2))
 	{
-		position.y = -(FRAMEWORK.GetWindowSize().y / 2) + (playerSkin.height / 2);
+		position.y = -(FRAMEWORK.GetWindowSize().y / 2) +50+ (playerSkin.height / 2);
 	}
 }
 
 void Player::Move()
-{
+{/*
+	std::cout << "pos.x : " << position.x << std::endl;
+	std::cout << "pos.y : " << position.y << std::endl << std::endl;*/
 	if (animation.GetCurrIds() != "PlayerLeftMove")
 	{
 		if (dir.x < 0)
@@ -126,6 +128,8 @@ void Player::Fire()
 		bullet->Reset();
 		bullet->SetDir({ 0.f, -1.f });
 		bullet->BulletStatPos(position);
+		bullet->SetDelCount(0);
+		bullet->SetRoCount(0);
 		sceneGame->AddGo(bullet);
 	}
 }

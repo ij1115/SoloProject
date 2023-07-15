@@ -1,0 +1,7 @@
+ID,FPS,LOOPTYPE,,
+BossLeftMove,10,0,,
+,,,,
+TEXTURE ID,LEFT,TOP,WIDTH,HEIGHT
+graphics/Boss_Utsuho_Reiuji.png,11,237,76,94
+graphics/Boss_Utsuho_Reiuji.png,117,236,65,93
+graphics/Boss_Utsuho_Reiuji.png,215,238,69,92

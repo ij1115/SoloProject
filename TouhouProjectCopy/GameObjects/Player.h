@@ -21,6 +21,7 @@ protected:
 	sf::IntRect playerSkin;
 
 	Bullet* bullet;
+
 public:
 	Player(const std::string& textureId= "", const std::string& n= "")
 		: SpriteGo(textureId,n) {}

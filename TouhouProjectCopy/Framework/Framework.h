@@ -13,7 +13,7 @@ protected:
 	sf::RenderWindow window;
 	sf::Clock clock;
 
-	int screenWidth =  1620;
+	int screenWidth =  1920;
 	int screenHeight = 1080;
 	std::string title = "Touhou Project chireden";
 
