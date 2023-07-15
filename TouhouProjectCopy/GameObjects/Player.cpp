@@ -16,50 +16,57 @@ void Player::Init()
 
 	animation.SetTarget(&sprite);
 
-	this->sprite.setScale(2.2f, 2.2f);
-
 	SetOrigin(Origins::MC);
 }
 
 void Player::Reset()
 {
-	SetPosition(-(FRAMEWORK.GetWindowSize().x / 4), +(FRAMEWORK.GetWindowSize().y/2));
+	SetPosition(gameView.left+gameView.width/2, gameView.top + gameView.height + 50.f);
+	dir = { 0.f,-1.f };
 	animation.Play("PlayerIdle");
 	SetOrigin(origin);
-	speed = 600.f;
+	speed = 100.f;
 	timer = attackDelay;
 }
 
 void Player::Update(float dt)
 {
-	
-	dir.x = INPUT_MGR.GetAxisRaw(Axis::Horizontal);
-	dir.y = INPUT_MGR.GetAxisRaw(Axis::Vertical);
-
-	MovingLimit();
-
-	timer -= dt;
-
-	if (timer < 0.f && INPUT_MGR.GetKey(sf::Keyboard::Z))
-	{
-		timer = attackDelay;
-		
-		std::cout << "attack"<<std::endl;
-		Fire();
-
-	}
-
 	SetPosition(position + dir * speed * dt);
 
-	Move();
-
-	if (INPUT_MGR.GetKeyDown(sf::Keyboard::LShift))
+	if (control && position.y  < gameView.top + gameView.height -50.f)
 	{
-		speed = 300.f;
+		control = false;
+		speed = 500.f;
 	}
-	if (INPUT_MGR.GetKeyUp(sf::Keyboard::LShift))
+	else if (!control)
 	{
-		speed = 600.f;
+		dir.x = INPUT_MGR.GetAxisRaw(Axis::Horizontal);
+		dir.y = INPUT_MGR.GetAxisRaw(Axis::Vertical);
+
+		MovingLimit();
+
+		timer -= dt;
+
+		if (timer < 0.f && INPUT_MGR.GetKey(sf::Keyboard::Z))
+		{
+			timer = attackDelay;
+
+			std::cout << "attack" << std::endl;
+			Fire();
+		}
+
+		Move();
+
+		if (INPUT_MGR.GetKeyDown(sf::Keyboard::LShift))
+		{
+			speed = 200.f;
+		}
+
+		if (INPUT_MGR.GetKeyUp(sf::Keyboard::LShift))
+		{
+			speed = 500.f;
+
+		}
 	}
 
 	animation.Update(dt);
@@ -68,30 +75,26 @@ void Player::Update(float dt)
 
 void Player::MovingLimit()
 {
-	playerSkin = this->sprite.getTextureRect();
-
-	if (position.x < -(FRAMEWORK.GetWindowSize().x / 2)+ 100 + (playerSkin.width / 2))
+	if (position.x < gameView.left+15.f)
 	{
-		position.x = -(FRAMEWORK.GetWindowSize().x / 2) +100+ (playerSkin.width / 2);
+		position.x = gameView.left +15.f;
 	}
-	else if (position.x >70 + (playerSkin.width / 2))
+	else if (position.x > gameView.left + gameView.width  - 15.f)
 	{
-		position.x =70 + playerSkin.width / 2;
+		position.x = gameView.left + gameView.width - 15.f;
 	}
-	if (position.y > (FRAMEWORK.GetWindowSize().y / 2) - 50 - (playerSkin.height / 2))
+	if (position.y > gameView.top + gameView.height - 25.f)
 	{
-		position.y = (FRAMEWORK.GetWindowSize().y / 2) - 50 - (playerSkin.height / 2);
+		position.y = gameView.top + gameView.height -25.f;
 	}
-	else if (position.y < -(FRAMEWORK.GetWindowSize().y / 2) + 50 + (playerSkin.height / 2))
+	else if (position.y < gameView.top+25)
 	{
-		position.y = -(FRAMEWORK.GetWindowSize().y / 2) +50+ (playerSkin.height / 2);
+		position.y = gameView.top+25;
 	}
 }
 
 void Player::Move()
-{/*
-	std::cout << "pos.x : " << position.x << std::endl;
-	std::cout << "pos.y : " << position.y << std::endl << std::endl;*/
+{
 	if (animation.GetCurrIds() != "PlayerLeftMove")
 	{
 		if (dir.x < 0)
@@ -127,7 +130,7 @@ void Player::Fire()
 		bullet->Init();
 		bullet->Reset();
 		bullet->SetDir({ 0.f, -1.f });
-		bullet->BulletStatPos(position);
+		bullet->BulletStatPos({ position.x,position.y-25.f});
 		bullet->SetDelCount(0);
 		bullet->SetRoCount(0);
 		sceneGame->AddGo(bullet);

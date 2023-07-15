@@ -40,6 +40,7 @@ protected:
 	User user;
 
 	sf::Vector2f view;
+	sf::FloatRect gameView;
 
 	ObjectPool<Bullet>* pool= nullptr;
 
@@ -63,6 +64,8 @@ public:
 	void SetDelCount(int i);
 
 	void Destroy();
+
+	void SetGameView(sf::FloatRect size) { gameView = size; }
 //Ãæµ¹  {}
 };
 

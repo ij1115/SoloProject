@@ -74,6 +74,7 @@ void Bullet::Update(float dt)
 		BulletRotate(-rotateRadin);
 	}
 
+
 	SetPosition(position + dir * speed * dt);
 
 	Destroy();
@@ -141,11 +142,10 @@ void Bullet::SetDelCount(int i)
 
 void Bullet::Destroy()
 {
-	if ((position.x > 100 || position.x < -(view.x / 2)) ||
-		(position.y > (view.y / 2)|| position.y < -(view.y / 2)))
+	if (position.x > gameView.left + gameView.width + 100.f || position.x < gameView.left -100.f ||
+		position.y > gameView.top + gameView.height +100.f || position.y < gameView.top -100.f)
 	{
 		SCENE_MGR.GetCurrScene()->RemoveGo(this);
 		pool->Return(this);
-		std::cout << pool->GetUseList().size() << std::endl;
 	}
 }

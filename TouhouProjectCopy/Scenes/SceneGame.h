@@ -12,6 +12,8 @@ protected:
 	Player* player;
 	SpriteGo* backGround;
 
+	sf::FloatRect gameViewSize;
+
 	ObjectPool<Bullet> poolBullet;
 public:
 	SceneGame();

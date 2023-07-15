@@ -15,7 +15,7 @@ void Boss::Init()
 
 	bossAnimation.SetTarget(&sprite);
 
-	this->sprite.setScale(2.f, 2.f);
+	//this->sprite.setScale(1.f, 1.f);
 
 	SetOrigin(Origins::MC);
 }

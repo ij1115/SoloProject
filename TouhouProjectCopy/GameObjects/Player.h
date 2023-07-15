@@ -12,25 +12,29 @@ protected:
 
 	sf::Vector2f dir;
 
+	bool control = true;
+
 	float speed=600.f;
 	float timer = 0.f;
 	float attackDelay = 0.05f;
 
 	int boom = 0;
 
-	sf::IntRect playerSkin;
-
 	Bullet* bullet;
+
+	sf::FloatRect gameView;
 
 public:
 	Player(const std::string& textureId= "", const std::string& n= "")
 		: SpriteGo(textureId,n) {}
-	virtual ~Player() override { Release(); };
+	virtual ~Player() override { Release(); }
 
 	virtual void Init() override;
 	virtual void Reset() override;
 	
 	virtual void Update(float dt) override;
+
+	void SetGameView(sf::FloatRect size) { gameView = size; }
 
 	void MovingLimit();
 	void Move();

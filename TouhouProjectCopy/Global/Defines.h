@@ -40,3 +40,4 @@ enum class SceneId
 };
 
 #include "AniamtionClip.h"
+#include "PattenInfo.h"
