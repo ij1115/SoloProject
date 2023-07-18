@@ -27,6 +27,8 @@ void Player::Reset()
 	SetOrigin(origin);
 	speed = 100.f;
 	timer = attackDelay;
+	control = true;
+	hitDelay = true;
 }
 
 void Player::Release()
@@ -40,6 +42,17 @@ void Player::Update(float dt)
 	HitBoxPos();
 	SetPosition(position + dir * speed * dt);
 
+	if (hitDelay)
+	{
+		hitTimer -= dt;
+
+		if (hitTimer < 0.f)
+
+		{
+			hitDelay = false;
+		}
+	}
+
 	if (control && position.y  < gameView.top + gameView.height -50.f)
 	{
 		control = false;
@@ -52,11 +65,11 @@ void Player::Update(float dt)
 
 		MovingLimit();
 
-		timer -= dt;
+		this->timer -= dt;
 
-		if (timer < 0.f && INPUT_MGR.GetKey(sf::Keyboard::Z))
+		if (this->timer < 0.f && INPUT_MGR.GetKey(sf::Keyboard::Z))
 		{
-			timer = attackDelay;
+			this->timer = attackDelay;
 
 			//std::cout << "attack" << std::endl;
 			Fire();
@@ -145,6 +158,7 @@ void Player::Fire()
 		bullet->BulletStatPos({ position.x,position.y-25.f});
 		bullet->SetDelCount(0);
 		bullet->SetRoCount(0);
+		bullet->SetSpeed(1000.f);
 		sceneGame->AddGo(bullet);
 	}
 }
@@ -153,8 +167,7 @@ void Player::HitBoxPos()
 {
 	hitbox->SetPosition(position);
 }
-
-sf::FloatRect Player::GetHitBox()
+float Player::GetHitBox()
 {
-	return this->hitbox->GetCollider();
+	return this->hitbox->GetRaidus();
 }

@@ -17,7 +17,7 @@ protected:
 	sf::Vector2f targetPos;
 	sf::Vector2f dir;
 
-	float maxHp;
+	float maxHp=2000.f;
 	float hp;
 
 	float speed = 600.f;
@@ -34,7 +34,8 @@ protected:
 	bool curve = false;
 	bool bossPrivatePose = false;
 	bool delay = false;
-	
+	bool action = false;
+	int actionNum = 0;
 	//시험용
 	int count;
 	//코드
@@ -73,30 +74,33 @@ public:
 	void SetHitBox(ShapeGo* hitbox) { this->hitbox = hitbox; }
 	void HitBoxPos() { hitbox->SetPosition(position); }
 	void Fire();
+	void Fire2();
 	void Move();
 	sf::Vector2f BezierMove(const sf::Vector2f& pos0, const sf::Vector2f& pos1, const sf::Vector2f& pos2, float moveT);
 
 	void Patten1();
+	void Patten2();
+	void Patten3();
 
 	//패턴 설정 값
-	void SetStartMovePosX(float x) { startMovePos.x = x; };
-	void SetStartMovePosY(float y) { startMovePos.y = y; };
-	void SetMiddleMovePosX(float x) { middleMovePos.x = x; };
-	void SetMiddleMovePosY(float y) { middleMovePos.y = y; };
-	void SetEndMovePosX(float x) { endMovePos.x = x; };
-	void SetEndMovePosY(float y) { endMovePos.y = y; };
-	void SetDirX(float x) { dir.x = x; };
-	void SetSpeed(float s) { speed = s; }
+	void SetStartMovePosX(float x) { this->startMovePos.x = x; };
+	void SetStartMovePosY(float y) { this->startMovePos.y = y; };
+	void SetMiddleMovePosX(float x) { this->middleMovePos.x = x; };
+	void SetMiddleMovePosY(float y) { this->middleMovePos.y = y; };
+	void SetEndMovePosX(float x) { this->endMovePos.x = x; };
+	void SetEndMovePosY(float y) { this->endMovePos.y = y; };
+	void SetDirX(float x) { this->dir.x = x; };
+	void SetSpeed(float s) { this->speed = s; }
 	void SetCurve() {
-		curve = true;
-		strike = false;
+		this->curve = true;
+		this->strike = false;
 	}
 	void SetStrike() {
-		curve = false;
-		strike = true;
+		this->curve = false;
+		this->strike = true;
 	}
-	void PoseTrue() { if (!bossPrivatePose) bossPrivatePose = true; }
-	void PoseFalse() { if (bossPrivatePose) bossPrivatePose = false; }
+	void PoseTrue() { if (!bossPrivatePose) this->bossPrivatePose = true; }
+	void PoseFalse() { if (bossPrivatePose) this->bossPrivatePose = false; }
 	void CheckEndPosTypeCurve();
 	void CheckEndPosTypeStrike();
 	void SetStrikeDir();
@@ -105,10 +109,16 @@ public:
 	void TimeOut() {
 		if (delayTime < 0.f && delay)
 		{
-			delay = false;
-			count++;
+			this->delay = false;
+			this->count++;
 		}
 	}
+	void CountUp() { this->count++; }
+	
 
-	sf::FloatRect GetHitBox();
+	float GetHitBox();
+
+	void BossDamage(float damage) { hp -= damage; }
+	float GetBossHp() { return hp; }
+
 };

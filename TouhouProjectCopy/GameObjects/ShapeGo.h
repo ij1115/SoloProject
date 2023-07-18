@@ -10,8 +10,10 @@ enum class Types
 class ShapeGo : public GameObject
 {
 protected:
-	sf::RectangleShape shape;
+	//sf::RectangleShape shape;
+	sf::CircleShape shape;
 	Types type;
+
 	ObjectPool<ShapeGo>* pool = nullptr;
 public:
 
@@ -30,12 +32,14 @@ public:
 	virtual void Reset() override;
 	virtual void Update(float dt) override;
 
-	void SetHitBoxSize(sf::Vector2f s) { shape.setSize(s); }
+	void SetHitBoxSize(float s) { shape.setRadius(s); }
 	void SetHitBoxFillColor(sf::Color c) { shape.setFillColor(c); }
 	void SetHitBoxOutLineColor(sf::Color c) { shape.setOutlineColor(c); }
 	void SetHitBoxOutLineThickness(float t) { shape.setOutlineThickness(t); }
 	void SetType(int n) { type = (Types)n; }
 	void SetPool(ObjectPool<ShapeGo>* hitBoxPool);
 	sf::FloatRect GetCollider();
+	float GetRaidus() { return shape.getRadius(); }
+	sf::Vector2f GetPos() { return this->GetPosition(); }
 };
 

@@ -13,6 +13,9 @@ protected:
 	sf::Vector2f dir;
 
 	bool control = true;
+	bool hitDelay = true;
+
+	float hitTimer = 0.f;
 
 	float speed=600.f;
 	float timer = 0.f;
@@ -46,6 +49,8 @@ public:
 	void SetHitBox(ShapeGo* shape) { this->hitbox = shape; }
 	void HitBoxPos();
 
-	sf::FloatRect GetHitBox();
+	float GetHitBox();
+	bool GetHitDelay() { return hitDelay; }
+	void SetHitDelay(float t) { hitTimer = t; }
 };
 

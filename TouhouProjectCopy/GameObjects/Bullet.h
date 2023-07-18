@@ -20,6 +20,8 @@ public:
 		Line,
 	};
 protected:
+	int setFire = 0;
+	int count = 0;
 	float speed = 1000.f;
 
 	sf::Vector2f dir;
@@ -30,13 +32,12 @@ protected:
 	int rotateCount = 0;
 
 	bool useDelayTime = false;
-	float delayTime = 0.f;
 	float sleepTime = 1.f;
 	int delayCount = 0;
 	bool move = true;
 
-	bool sleepOn = false;
-	float deepSleep = 5.f;
+	bool delay = false;
+	float delayTime = 0.f;
 	float deepSleepTimer = 0.f;
 
 	Types type;
@@ -62,28 +63,42 @@ public:
 
 	virtual void Update(float dt) override;
 
+	void SetGameView(sf::FloatRect size) { gameView = size; }
+
+	//bullet setting
+	void SetFire(int n) { this->setFire = n; }
 	void SetPlayer(Player* player) { this->player = player; }
 	void SetBoss(Boss* boss) { this->boss = boss; }
 	void SetPool(ObjectPool<Bullet>* bulletPool);
 	void SetHitBoxPool(ObjectPool<ShapeGo>* hitboxPool);
-
-	void BulletRotate(float count);
-	void BulletStatPos(sf::Vector2f Pos);
-	void SetDir(sf::Vector2f Dir);
 	void SetBulletType(Types pick);
 	void SetUser(User pick);
-
-	void SetHitBox(ShapeGo* hitbox) { this->hitbox = hitbox; }
-	void HitBoxPos(){ hitbox->SetPosition(position); }
-	void SetRoCount(int i);
-	void SetDelCount(int i);
-
+	void SetCount() { this->count =0; }
 	void Destroy();
+	void SetSpeed(float s) { this->speed = s; }
 
 	bool BossCollider();
 	bool PlayerCollider();
+	void SetHitBox(ShapeGo* hitbox) { this->hitbox = hitbox; }
+	void HitBoxPos() { hitbox->SetPosition(position); }
 
-	void SetGameView(sf::FloatRect size) { gameView = size; }
+
+	//bullet custom
+	void SetDir(sf::Vector2f Dir);
+	void SetDirPlayerPos() { dir = Utils::Normalize(player->GetPosition() - this->position); }
+	void SetDelayTime(float t) { if (!delay) { this->delay = true; this->delayTime = t; } }
+	void CheckDelay();
+	void BulletRotate(float count);
+	void BulletStatPos(sf::Vector2f Pos);
+
+
+	void SetRoCount(int i);
+	void SetDelCount(int i);
+
+	void CountUp() { this->count++; }
+	//patten
+	void BulletPatten1();
+	void BulletPatten2();
 //Ãæµ¹  {}
 };
 

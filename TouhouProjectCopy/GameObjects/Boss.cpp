@@ -19,7 +19,6 @@ void Boss::Init()
 
 	bossAnimation.SetTarget(&sprite);
 	
-	
 	//this->sprite.setScale(1.f, 1.f);
 
 	SetOrigin(Origins::MC);
@@ -34,6 +33,7 @@ void Boss::Reset()
 	timer = 0.f;
 	dir = { 0.f,0.f };
 	count = 0;
+	hp=maxHp;
 }
 
 void Boss::Release()
@@ -44,11 +44,31 @@ void Boss::Release()
 
 void Boss::Update(float dt)
 {
+	std::cout << hp << std::endl;
 	SpriteGo::Update(dt);
 	bossAnimation.Update(dt);
 	HitBoxPos();
 	//std::cout << delayTime << std::endl;
-	Patten1();
+
+	if (!action)
+	{
+		actionNum = Utils::RandomRange(1, 4);
+		action = true;
+	}
+	else if (action&&actionNum == 1)
+	{
+		Patten1();
+	}
+	else if (action && actionNum == 2)
+	{
+		Patten2();
+	}
+	else if(action && actionNum==3)
+	{
+		Patten3();
+
+	}
+	
 	if (delay)
 	{
 		delayTime -= dt;
@@ -108,10 +128,29 @@ void Boss::Fire()
 		bullet->SetBulletType((Bullet::Types)0);
 		bullet->Init();
 		bullet->Reset();
-		bullet->SetDir({ 0.f, 1.f });
 		bullet->BulletStatPos({ position.x,position.y - 25.f });
-		bullet->SetDelCount(0);
-		bullet->SetRoCount(0);
+		bullet->SetCount();
+		bullet->SetSpeed(0.f);
+		bullet->SetFire(1);
+		sceneGame->AddGo(bullet);
+	}
+}
+
+void Boss::Fire2()
+{
+	Scene* scene = SCENE_MGR.GetCurrScene();
+	SceneGame* sceneGame = dynamic_cast<SceneGame*>(scene);
+	if (sceneGame != nullptr)
+	{
+		sceneGame->GetBullet(bullet);
+		bullet->SetUser((Bullet::User)1);
+		bullet->SetBulletType((Bullet::Types)0);
+		bullet->Init();
+		bullet->Reset();
+		bullet->BulletStatPos({ position.x,position.y - 25.f });
+		bullet->SetCount();
+		bullet->SetSpeed(0.f);
+		bullet->SetFire(2);
 		sceneGame->AddGo(bullet);
 	}
 }
@@ -191,7 +230,7 @@ void Boss::Patten1()
 		move = true;
 		SetEndMovePosX(center.x);
 		SetEndMovePosY(center.y);
-		SetSpeed(300.f);
+		SetSpeed(400.f);
 		Fire();
 		SetStrike();
 		SetStrikeDir();
@@ -211,46 +250,105 @@ void Boss::Patten1()
 	}
 	else if (count == 4)
 	{
-		PoseTrue();
-		Fire();
-		SetdelayTime(0.1f);
+		SetdelayTime(1.5f);
 		TimeOut();
 	}
 	else if (count == 5)
 	{
-		PoseTrue();
-		SetdelayTime(0.1f);
-		TimeOut();
+		PoseFalse();
+		action = false;
+		count = 0;
 	}
-	else if (count == 6)
+}
+void Boss::Patten2()
+{
+	if (count == 0)
 	{
-		PoseTrue();
+		move = true;
+		PattenSetPos();
+		SetEndMovePosX(center.x + 200.f);
+		SetEndMovePosY(center.y - 200.f);
+		SetSpeed(300.f);
+		SetStrike();
+		SetStrikeDir();
+		CheckEndPosTypeStrike();
+	}
+	else if (count == 1)
+	{
+		move = true;
+		SetMiddleMovePosX(center.x);
+		SetMiddleMovePosY(center.y);
+		SetEndMovePosX(center.x - 300.f);
+		SetEndMovePosY(center.y - 250.f);
+		SetDirX(-1.f);
+		SetSpeed(0.5f);
+		SetCurve();
+		CheckEndPosTypeCurve();
+	}
+	else if (count == 2)
+	{
+		move = true;
+		SetEndMovePosX(center.x);
+		SetEndMovePosY(center.y);
+		SetSpeed(400.f);
 		Fire();
-		SetdelayTime(0.1f);
-		TimeOut();
+		SetStrike();
+		SetStrikeDir();
+		CheckEndPosTypeStrike();
 	}
-	else if (count == 7)
+	else if (count == 3)
 	{
-		PoseTrue();
-		SetdelayTime(0.1f);
-		TimeOut();
+		move = true;
+		SetMiddleMovePosX(center.x - 100.f);
+		SetMiddleMovePosY(center.y - 200.f);
+		SetEndMovePosX(center.x + 250.f);
+		SetEndMovePosY(center.y - 50.f);
+		SetDirX(1.f);
+		SetSpeed(0.5f);
+		SetCurve();
+		CheckEndPosTypeCurve();
 	}
-	else if (count == 8)
+	else if (count == 4)
 	{
-		PoseTrue();
-		Fire();
-		SetdelayTime(0.1f);
+		SetdelayTime(1.5f);
 		TimeOut();
 	}
-	else if (count == 9)
-	{
-		PoseTrue();
-		SetdelayTime(0.5f);
-		TimeOut();
-	}
-	if (count == 10)
+	else if (count == 5)
 	{
 		PoseFalse();
+		action = false;
+		count = 0;
+	}
+}
+void Boss::Patten3()
+{
+	if (count == 0)
+	{
+		move = true;
+		PattenSetPos();
+		SetEndMovePosX(center.x);
+		SetEndMovePosY(center.y);
+		SetSpeed(300.f);
+		SetStrike();
+		SetStrikeDir();
+		CheckEndPosTypeStrike();
+	}
+	else if (count == 1)
+	{
+		PoseTrue();
+		SetdelayTime(1.f);
+		Fire2();
+		TimeOut();
+	}
+	else if (count == 2)
+	{
+		SetdelayTime(5.f);
+		TimeOut();
+	}
+	else if (count == 3)
+	{
+		PoseFalse();
+		action = false;
 		count = 0;
 	}
 }
@@ -267,7 +365,6 @@ void Boss::CheckEndPosTypeCurve()
 		timer = 0;
 	}
 }
-
 void Boss::CheckEndPosTypeStrike()
 {
 	length = Utils::Distance(position, endMovePos);
@@ -282,18 +379,15 @@ void Boss::CheckEndPosTypeStrike()
 		timer = 0;
 	}
 }
-
 void Boss::SetStrikeDir()
 {
 	dir = Utils::Normalize(endMovePos-startMovePos);
 }
-
 void Boss::PattenSetPos()
 {
 	SetStartMovePosX(position.x);
 	SetStartMovePosY(position.y);
 }
-
 void Boss::SetdelayTime(float t)
 {
 	if (!delay)
@@ -302,11 +396,9 @@ void Boss::SetdelayTime(float t)
 		delayTime = t;
 	}
 }
-
-sf::FloatRect Boss::GetHitBox()
+float Boss::GetHitBox()
 {
-	return this->hitbox->GetCollider();
+	return this->hitbox->GetRaidus();
 }
-
 //gameViewSize.width = 914.5f;
 //gameViewSize.height = 640.f;

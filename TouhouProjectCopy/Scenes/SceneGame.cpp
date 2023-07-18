@@ -58,7 +58,7 @@ void SceneGame::Init()
 	buttomBar->sortLayer = 101;
 
 	ShapeGo* pHitbox = poolHitBox.Get();
-	pHitbox->SetHitBoxSize({ 5.f,5.f });
+	pHitbox->SetHitBoxSize(1.f);
 	pHitbox->SetHitBoxFillColor(sf::Color::Transparent);
 	pHitbox->SetHitBoxOutLineColor(sf::Color::Red);
 	pHitbox->SetHitBoxOutLineThickness(1);
@@ -81,7 +81,7 @@ void SceneGame::Init()
 	backGround->sortLayer = -1;
 
 	ShapeGo* bHitbox = poolHitBox.Get();
-	bHitbox->SetHitBoxSize({ 62.f,80.f });
+	bHitbox->SetHitBoxSize(31.f);
 	bHitbox->SetHitBoxFillColor(sf::Color::Transparent);
 	bHitbox->SetHitBoxOutLineColor(sf::Color::Red);
 	bHitbox->SetHitBoxOutLineThickness(1);
