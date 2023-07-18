@@ -5,6 +5,8 @@
 #include "Scene.h"
 #include "DataTableMgr.h"
 #include "ResourceMgr.h"
+#include "PattenMgr.h"
+
 Framework::Framework(int w, int h, const std::string& t)
     : screenWidth(w), screenHeight(h), title(t)
 {
@@ -16,8 +18,8 @@ void Framework::Init(int width, int height, const std::string& title)
 
     
     DATATABLE_MGR.LoadAll();
- 
     RESOURCE_MGR.Init();
+    PATTEN_MGR.Init();
     SCENE_MGR.Init();
 }
 

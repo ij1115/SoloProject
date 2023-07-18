@@ -12,6 +12,7 @@
 #include "Bullet.h"
 
 
+
 SceneGame::SceneGame() : Scene(SceneId::Game)
 {
 	resourceListPath = "scripts/SceneGameResourceList.csv";
@@ -30,6 +31,10 @@ void SceneGame::Init()
 	{
 		bullet->SetPool(&poolBullet);
 		bullet->SetGameView(gameViewSize);
+	};
+	poolHitBox.OnCreate = [this](ShapeGo* hitbox)
+	{
+		hitbox->SetPool(&poolHitBox);
 	};
 
 	SpriteGo* leftBar = (SpriteGo*)AddGo(new SpriteGo("graphics/mainView.png"));
@@ -56,23 +61,43 @@ void SceneGame::Init()
 	buttomBar->sprite.setScale(914.5f / 383.f, 2.5f);
 	buttomBar->sortLayer = 101;
 
+	ShapeGo* pHitbox = poolHitBox.Get();
+	pHitbox->SetHitBoxSize({ 5.f,5.f });
+	pHitbox->SetHitBoxFillColor(sf::Color::Transparent);
+	pHitbox->SetHitBoxOutLineColor(sf::Color::Red);
+	pHitbox->SetHitBoxOutLineThickness(1);
+	pHitbox->SetOrigin(Origins::MC);
+	pHitbox->sortLayer = 5;
+	pHitbox->SetType(0);
+	AddGo(pHitbox);
+
+
 	Player* player = (Player*)AddGo(new Player());
 	player->SetGameView(gameViewSize);
 	player->sortLayer = 1;
+	player->SetHitBox(pHitbox);
 
 	backGround = (SpriteGo*)AddGo(new SpriteGo("graphics/stage05a.png"));
 	backGround->sprite.setTextureRect(sf::IntRect(0, 0, 256, 256));
 	backGround->SetPosition(-200.f, 0.f);
-	backGround->sprite.setScale(1.f, 1.f);
+	backGround->sprite.setScale(7.f, 7.f);
 	backGround->SetOrigin(Origins::MC);
 	backGround->sortLayer = -1;
-	
-	std::cout << backGround->GetPosition().x << std::endl;
-	std::cout << backGround->GetPosition().y << std::endl;
-	// -695 115 810 - 467 540 73
 
+	ShapeGo* bHitbox = poolHitBox.Get();
+	bHitbox->SetHitBoxSize({ 62.f,80.f });
+	bHitbox->SetHitBoxFillColor(sf::Color::Transparent);
+	bHitbox->SetHitBoxOutLineColor(sf::Color::Red);
+	bHitbox->SetHitBoxOutLineThickness(1);
+	bHitbox->SetOrigin(Origins::MC);
+	bHitbox->sortLayer = 5;
+	bHitbox->SetType(1);
+	AddGo(bHitbox);
 
 	Boss* boss = (Boss*)AddGo(new Boss());
+	boss->SetGameView(gameViewSize);
+	boss->SetPlayer(player);
+	boss->SetHitBox(bHitbox);
 
 	for (auto go : gameObjects)
 	{

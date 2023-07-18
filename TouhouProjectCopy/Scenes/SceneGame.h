@@ -5,6 +5,7 @@
 class SpriteGo;
 class Player;
 class Bullet;
+class ShapeGo;
 
 class SceneGame : public Scene
 {
@@ -15,6 +16,7 @@ protected:
 	sf::FloatRect gameViewSize;
 
 	ObjectPool<Bullet> poolBullet;
+	ObjectPool<ShapeGo> poolHitBox;
 public:
 	SceneGame();
 	virtual ~SceneGame() override = default;

@@ -21,9 +21,10 @@ protected:
 	int boom = 0;
 
 	Bullet* bullet;
+	ShapeGo* hitbox;
 
 	sf::FloatRect gameView;
-
+	ObjectPool<ShapeGo>* pool = nullptr;
 public:
 	Player(const std::string& textureId= "", const std::string& n= "")
 		: SpriteGo(textureId,n) {}
@@ -34,10 +35,15 @@ public:
 	
 	virtual void Update(float dt) override;
 
+	void SetPoolSetPool(ObjectPool<ShapeGo>* hitBoxPool);
+
 	void SetGameView(sf::FloatRect size) { gameView = size; }
 
 	void MovingLimit();
 	void Move();
 	void Fire();
+
+	void SetHitBox(ShapeGo* shape) { this->hitbox = shape; }
+	void HitBoxPos();
 };
 

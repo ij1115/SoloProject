@@ -4,6 +4,7 @@
 #include "SceneMgr.h"
 #include "SceneGame.h"
 #include "ResourceMgr.h"
+#include "ShapeGo.h"
 
 Bullet::Bullet(const std::string& textureId, const std::string& n)
 	:SpriteGo(textureId,n)
@@ -41,7 +42,7 @@ void Bullet::Reset()
 void Bullet::Update(float dt)
 {
 	SpriteGo::Update(dt);
-
+	HitBoxPos();
 	delayTime -= dt;
 	deepSleep -= dt;
 
@@ -119,6 +120,14 @@ void Bullet::SetBulletType(Types pick)
 			tRect.top = 147.f;
 			tRect.width = 16.f;
 			tRect.height = 12.f;
+			hitbox->SetHitBoxSize({ 12.f,12.f });
+			hitbox->SetHitBoxFillColor(sf::Color::Transparent);
+			hitbox->SetHitBoxOutLineColor(sf::Color::Red);
+			hitbox->SetHitBoxOutLineThickness(1);
+			hitbox->SetOrigin(Origins::MC);
+			hitbox->sortLayer = 5;
+			hitbox->SetType(0);
+			SCENE_MGR.GetCurrScene()->AddGo(hitbox);
 			sprite.setTextureRect((sf::IntRect)tRect);
 		}
 	}

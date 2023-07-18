@@ -3,21 +3,13 @@
 
 bool PattenInfo::LoadFromFile(const std::string path)
 {
-	rapidcsv::Document doc(path);
-	
+    rapidcsv::Document doc(path, rapidcsv::LabelParams(-1, -1));
+    id = doc.GetCell <std::string>(0, 1);
 
-	return true;
+    for (int i = 4; i < doc.GetRowCount(); ++i)
+    {
+        auto rows = doc.GetRow<float>(i);
+        bulletAction.push_back({ (BulletInfoType)rows[0], rows[1] });
+    }
+    return true;
 }
-enum class User
-{
-	Player,
-	Enemy,
-	NONE,
-};
-enum class BulletInfoType
-{
-	Speed,
-	Direction,
-	Rotate,
-	Delay,
-};

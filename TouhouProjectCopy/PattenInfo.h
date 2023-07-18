@@ -1,29 +1,25 @@
 #pragma once
 
-enum class User
-{
-	Player,
-	Enemy,
-	NONE,
-};
 enum class BulletInfoType
 {
+	PositionX,
+	PositionY,
 	Speed,
 	Direction,
 	Rotate,
 	Delay,
+	Delete,
 };
 
 struct Patten
 {
-	std::string textureId;
 	BulletInfoType type;
 	float value;
 };
 
 struct PattenInfo
 {
-	User user;
+	std::string id;
 	std::vector<Patten> bulletAction;
 
 	bool LoadFromFile(const std::string path);

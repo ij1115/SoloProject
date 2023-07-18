@@ -31,6 +31,7 @@ void Player::Reset()
 
 void Player::Update(float dt)
 {
+	HitBoxPos();
 	SetPosition(position + dir * speed * dt);
 
 	if (control && position.y  < gameView.top + gameView.height -50.f)
@@ -71,6 +72,10 @@ void Player::Update(float dt)
 
 	animation.Update(dt);
 	SpriteGo::Update(dt);
+}
+
+void Player::SetPoolSetPool(ObjectPool<ShapeGo>* hitBoxPool)
+{
 }
 
 void Player::MovingLimit()
@@ -137,3 +142,7 @@ void Player::Fire()
 	}
 }
 
+void Player::HitBoxPos()
+{
+	hitbox->SetPosition(position);
+}

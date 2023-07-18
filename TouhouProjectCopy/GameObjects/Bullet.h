@@ -3,6 +3,8 @@
 #include "Player.h"
 #include "ObjectPool.h"
 
+class ShapeGo;
+
 class Bullet : public SpriteGo
 {
 public:
@@ -42,6 +44,8 @@ protected:
 	sf::Vector2f view;
 	sf::FloatRect gameView;
 
+	ShapeGo* hitbox;
+
 	ObjectPool<Bullet>* pool= nullptr;
 
 public:
@@ -60,6 +64,8 @@ public:
 	void SetBulletType(Types pick);
 	void SetUser(User pick);
 
+	void SetHitBox(ShapeGo* hitbox) { this->hitbox = hitbox; }
+	void HitBoxPos(){ hitbox->SetPosition(position); }
 	void SetRoCount(int i);
 	void SetDelCount(int i);
 

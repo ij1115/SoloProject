@@ -54,3 +54,8 @@ void ShapeGo::Reset()
 void ShapeGo::Update(float dt)
 {
 }
+
+void ShapeGo::SetPool(ObjectPool<ShapeGo>* hitBoxPool)
+{
+	this->pool = hitBoxPool;
+}
