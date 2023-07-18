@@ -36,5 +36,6 @@ public:
 	void SetHitBoxOutLineThickness(float t) { shape.setOutlineThickness(t); }
 	void SetType(int n) { type = (Types)n; }
 	void SetPool(ObjectPool<ShapeGo>* hitBoxPool);
+	sf::FloatRect GetCollider();
 };
 

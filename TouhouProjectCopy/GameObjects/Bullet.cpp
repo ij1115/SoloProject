@@ -75,6 +75,21 @@ void Bullet::Update(float dt)
 		BulletRotate(-rotateRadin);
 	}
 
+	if (user == User::Player&& BossCollider())
+	{
+		SCENE_MGR.GetCurrScene()->RemoveGo(this);
+		SCENE_MGR.GetCurrScene()->RemoveGo(this->hitbox);
+		hitboxPool->Return(this->hitbox);
+		pool->Return(this);
+		std::cout << "Damage" << std::endl;
+	}
+	else if(user == User::Enemy&& PlayerCollider())
+	{
+		SCENE_MGR.GetCurrScene()->RemoveGo(this);
+		SCENE_MGR.GetCurrScene()->RemoveGo(this->hitbox);
+		hitboxPool->Return(this->hitbox);
+		pool->Return(this);
+	}
 
 	SetPosition(position + dir * speed * dt);
 
@@ -85,6 +100,11 @@ void Bullet::Update(float dt)
 void Bullet::SetPool(ObjectPool<Bullet>* bulletPool)
 {
 	this->pool = bulletPool;
+}
+
+void Bullet::SetHitBoxPool(ObjectPool<ShapeGo>* hitboxPool)
+{
+	this->hitboxPool = hitboxPool;
 }
 
 void Bullet::BulletRotate(float count)
@@ -120,6 +140,7 @@ void Bullet::SetBulletType(Types pick)
 			tRect.top = 147.f;
 			tRect.width = 16.f;
 			tRect.height = 12.f;
+			hitbox = hitboxPool->Get();
 			hitbox->SetHitBoxSize({ 12.f,12.f });
 			hitbox->SetHitBoxFillColor(sf::Color::Transparent);
 			hitbox->SetHitBoxOutLineColor(sf::Color::Red);
@@ -131,7 +152,29 @@ void Bullet::SetBulletType(Types pick)
 			sprite.setTextureRect((sf::IntRect)tRect);
 		}
 	}
-
+	if (user == User::Enemy)
+	{
+		if (type == Types::Shape)
+		{
+			textureId = "graphics/Player.png";
+			sprite.setTexture(*RESOURCE_MGR.GetTexture("graphics/Player.png"));
+			sf::FloatRect tRect;
+			tRect.left = 1.f;
+			tRect.top = 147.f;
+			tRect.width = 16.f;
+			tRect.height = 12.f;
+			hitbox = hitboxPool->Get();
+			hitbox->SetHitBoxSize({ 12.f,12.f });
+			hitbox->SetHitBoxFillColor(sf::Color::Transparent);
+			hitbox->SetHitBoxOutLineColor(sf::Color::Red);
+			hitbox->SetHitBoxOutLineThickness(1);
+			hitbox->SetOrigin(Origins::MC);
+			hitbox->sortLayer = 5;
+			hitbox->SetType(0);
+			SCENE_MGR.GetCurrScene()->AddGo(hitbox);
+			sprite.setTextureRect((sf::IntRect)tRect);
+		}
+	}
 }
 
 void Bullet::SetUser(User pick)
@@ -155,6 +198,19 @@ void Bullet::Destroy()
 		position.y > gameView.top + gameView.height +100.f || position.y < gameView.top -100.f)
 	{
 		SCENE_MGR.GetCurrScene()->RemoveGo(this);
+		SCENE_MGR.GetCurrScene()->RemoveGo(this->hitbox);
+		hitboxPool->Return(this->hitbox);
 		pool->Return(this);
 	}
+}
+
+bool Bullet::BossCollider()
+{
+	bool a = this->hitbox->GetCollider().intersects(boss->GetHitBox());
+	return a;
+}
+
+bool Bullet::PlayerCollider()
+{
+	return this->hitbox->GetCollider().intersects(player->GetHitBox());
 }

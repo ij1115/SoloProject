@@ -1,5 +1,6 @@
 #pragma once
 #include "SpriteGo.h"
+#include "Boss.h"
 #include "Player.h"
 #include "ObjectPool.h"
 
@@ -46,7 +47,11 @@ protected:
 
 	ShapeGo* hitbox;
 
+	Boss* boss = nullptr;
+	Player* player = nullptr;
+
 	ObjectPool<Bullet>* pool= nullptr;
+	ObjectPool<ShapeGo>* hitboxPool = nullptr;
 
 public:
 	Bullet(const std::string& textureId="", const std::string& n="");
@@ -57,7 +62,11 @@ public:
 
 	virtual void Update(float dt) override;
 
+	void SetPlayer(Player* player) { this->player = player; }
+	void SetBoss(Boss* boss) { this->boss = boss; }
 	void SetPool(ObjectPool<Bullet>* bulletPool);
+	void SetHitBoxPool(ObjectPool<ShapeGo>* hitboxPool);
+
 	void BulletRotate(float count);
 	void BulletStatPos(sf::Vector2f Pos);
 	void SetDir(sf::Vector2f Dir);
@@ -70,6 +79,9 @@ public:
 	void SetDelCount(int i);
 
 	void Destroy();
+
+	bool BossCollider();
+	bool PlayerCollider();
 
 	void SetGameView(sf::FloatRect size) { gameView = size; }
 //Ãæµ¹  {}

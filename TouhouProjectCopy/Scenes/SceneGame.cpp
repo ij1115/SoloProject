@@ -27,15 +27,11 @@ void SceneGame::Init()
 	gameViewSize.width = 914.5f;
 	gameViewSize.height = 640.f;
 	
-	poolBullet.OnCreate = [this](Bullet* bullet)
-	{
-		bullet->SetPool(&poolBullet);
-		bullet->SetGameView(gameViewSize);
-	};
 	poolHitBox.OnCreate = [this](ShapeGo* hitbox)
 	{
 		hitbox->SetPool(&poolHitBox);
 	};
+
 
 	SpriteGo* leftBar = (SpriteGo*)AddGo(new SpriteGo("graphics/mainView.png"));
 	leftBar->sprite.setTextureRect(sf::IntRect(0, 0, 31, 479));// -695 115 810 - 467 540 73
@@ -99,6 +95,16 @@ void SceneGame::Init()
 	boss->SetPlayer(player);
 	boss->SetHitBox(bHitbox);
 
+
+	poolBullet.OnCreate = [this, player, boss](Bullet* bullet)
+	{
+		bullet->SetPool(&poolBullet);
+		bullet->SetGameView(gameViewSize);
+		bullet->SetHitBoxPool(&poolHitBox);
+		bullet->SetPlayer(player);
+		bullet->SetBoss(boss);
+	};
+
 	for (auto go : gameObjects)
 	{
 		go->Init();
@@ -134,6 +140,9 @@ void SceneGame::Update(float dt)
 	Scene::Update(dt);
 
 	backGround->sprite.rotate(20 * dt);
+
+	std::cout << poolBullet.GetUseList().size() << std::endl;
+	std::cout << poolHitBox.GetUseList().size() << std::endl << std::endl;
 }
 
 void SceneGame::Draw(sf::RenderWindow& window)

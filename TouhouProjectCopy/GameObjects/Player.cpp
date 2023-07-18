@@ -29,6 +29,12 @@ void Player::Reset()
 	timer = attackDelay;
 }
 
+void Player::Release()
+{
+	SCENE_MGR.GetCurrScene()->RemoveGo(this->hitbox);
+	pool->Return(this->hitbox);
+}
+
 void Player::Update(float dt)
 {
 	HitBoxPos();
@@ -52,7 +58,7 @@ void Player::Update(float dt)
 		{
 			timer = attackDelay;
 
-			std::cout << "attack" << std::endl;
+			//std::cout << "attack" << std::endl;
 			Fire();
 		}
 
@@ -74,8 +80,9 @@ void Player::Update(float dt)
 	SpriteGo::Update(dt);
 }
 
-void Player::SetPoolSetPool(ObjectPool<ShapeGo>* hitBoxPool)
+void Player::SetHitBoxPool(ObjectPool<ShapeGo>* hitBoxPool)
 {
+	this->pool = hitBoxPool;
 }
 
 void Player::MovingLimit()
@@ -145,4 +152,9 @@ void Player::Fire()
 void Player::HitBoxPos()
 {
 	hitbox->SetPosition(position);
+}
+
+sf::FloatRect Player::GetHitBox()
+{
+	return this->hitbox->GetCollider();
 }

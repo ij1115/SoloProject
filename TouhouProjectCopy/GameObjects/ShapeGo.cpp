@@ -59,3 +59,8 @@ void ShapeGo::SetPool(ObjectPool<ShapeGo>* hitBoxPool)
 {
 	this->pool = hitBoxPool;
 }
+
+sf::FloatRect ShapeGo::GetCollider()
+{
+	return this->shape.getGlobalBounds();
+}

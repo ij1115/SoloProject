@@ -18,6 +18,7 @@ protected:
 	sf::Vector2f dir;
 
 	float maxHp;
+	float hp;
 
 	float speed = 600.f;
 	float timer = 0.f;
@@ -54,13 +55,11 @@ public:
 
 	virtual void Init() override;
 	virtual void Reset() override;
-
+	virtual void Release() override;
 	virtual void Update(float dt) override;
 
 
-	void SetPoolSetPool(ObjectPool<ShapeGo>* hitBoxPool);
-
-
+	void SetHitBoxPool(ObjectPool<ShapeGo>* hitBoxPool);
 
 	void SetGameView(sf::FloatRect size)
 	{
@@ -78,6 +77,8 @@ public:
 	sf::Vector2f BezierMove(const sf::Vector2f& pos0, const sf::Vector2f& pos1, const sf::Vector2f& pos2, float moveT);
 
 	void Patten1();
+
+	//패턴 설정 값
 	void SetStartMovePosX(float x) { startMovePos.x = x; };
 	void SetStartMovePosY(float y) { startMovePos.y = y; };
 	void SetMiddleMovePosX(float x) { middleMovePos.x = x; };
@@ -108,4 +109,6 @@ public:
 			count++;
 		}
 	}
+
+	sf::FloatRect GetHitBox();
 };

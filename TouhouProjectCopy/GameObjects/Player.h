@@ -32,10 +32,10 @@ public:
 
 	virtual void Init() override;
 	virtual void Reset() override;
-	
+	virtual void Release() override;
 	virtual void Update(float dt) override;
 
-	void SetPoolSetPool(ObjectPool<ShapeGo>* hitBoxPool);
+	void SetHitBoxPool(ObjectPool<ShapeGo>* hitBoxPool);
 
 	void SetGameView(sf::FloatRect size) { gameView = size; }
 
@@ -45,5 +45,7 @@ public:
 
 	void SetHitBox(ShapeGo* shape) { this->hitbox = shape; }
 	void HitBoxPos();
+
+	sf::FloatRect GetHitBox();
 };
 

@@ -36,12 +36,18 @@ void Boss::Reset()
 	count = 0;
 }
 
+void Boss::Release()
+{
+	SCENE_MGR.GetCurrScene()->RemoveGo(this->hitbox);
+	pool->Return(this->hitbox);
+}
+
 void Boss::Update(float dt)
 {
 	SpriteGo::Update(dt);
 	bossAnimation.Update(dt);
 	HitBoxPos();
-	std::cout << delayTime << std::endl;
+	//std::cout << delayTime << std::endl;
 	Patten1();
 	if (delay)
 	{
@@ -75,12 +81,11 @@ void Boss::Update(float dt)
 	SetPosition(position);
 }
 
-void Boss::SetPoolSetPool(ObjectPool<ShapeGo>* hitBoxPool)
+void Boss::SetHitBoxPool(ObjectPool<ShapeGo>* hitBoxPool)
 {
-	
-		this->pool = hitBoxPool;
-	
+	this->pool = hitBoxPool;
 }
+
 
 void Boss::SetTargetPos()
 {
@@ -94,6 +99,21 @@ void Boss::SetPlayer(Player* player)
 
 void Boss::Fire()
 {
+	Scene* scene = SCENE_MGR.GetCurrScene();
+	SceneGame* sceneGame = dynamic_cast<SceneGame*>(scene);
+	if (sceneGame != nullptr)
+	{
+		sceneGame->GetBullet(bullet);
+		bullet->SetUser((Bullet::User)1);
+		bullet->SetBulletType((Bullet::Types)0);
+		bullet->Init();
+		bullet->Reset();
+		bullet->SetDir({ 0.f, 1.f });
+		bullet->BulletStatPos({ position.x,position.y - 25.f });
+		bullet->SetDelCount(0);
+		bullet->SetRoCount(0);
+		sceneGame->AddGo(bullet);
+	}
 }
 
 void Boss::Move()
@@ -172,6 +192,7 @@ void Boss::Patten1()
 		SetEndMovePosX(center.x);
 		SetEndMovePosY(center.y);
 		SetSpeed(300.f);
+		Fire();
 		SetStrike();
 		SetStrikeDir();
 		CheckEndPosTypeStrike();
@@ -191,10 +212,43 @@ void Boss::Patten1()
 	else if (count == 4)
 	{
 		PoseTrue();
-		SetdelayTime(15.f);
+		Fire();
+		SetdelayTime(0.1f);
 		TimeOut();
 	}
-	if (count == 5)
+	else if (count == 5)
+	{
+		PoseTrue();
+		SetdelayTime(0.1f);
+		TimeOut();
+	}
+	else if (count == 6)
+	{
+		PoseTrue();
+		Fire();
+		SetdelayTime(0.1f);
+		TimeOut();
+	}
+	else if (count == 7)
+	{
+		PoseTrue();
+		SetdelayTime(0.1f);
+		TimeOut();
+	}
+	else if (count == 8)
+	{
+		PoseTrue();
+		Fire();
+		SetdelayTime(0.1f);
+		TimeOut();
+	}
+	else if (count == 9)
+	{
+		PoseTrue();
+		SetdelayTime(0.5f);
+		TimeOut();
+	}
+	if (count == 10)
 	{
 		PoseFalse();
 		count = 0;
@@ -217,7 +271,7 @@ void Boss::CheckEndPosTypeCurve()
 void Boss::CheckEndPosTypeStrike()
 {
 	length = Utils::Distance(position, endMovePos);
-	if (length <= 0.5f)
+	if (length <= 10.f)
 	{
 		move = false;
 		speed = 0.f;
@@ -247,6 +301,11 @@ void Boss::SetdelayTime(float t)
 		delay = true;
 		delayTime = t;
 	}
+}
+
+sf::FloatRect Boss::GetHitBox()
+{
+	return this->hitbox->GetCollider();
 }
 
 //gameViewSize.width = 914.5f;
