@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "HitboxGo.h"
 
-HitboxGo::HitboxGo(const std::string& n)
+HitboxGo::HitboxGo( const std::string& n)
 	: GameObject(n)
 {
 }

@@ -4,7 +4,7 @@
 #include "SceneMgr.h"
 #include "SceneGame.h"
 #include "ResourceMgr.h"
-#include "HitboxGo.h"
+
 
 Bullet::Bullet(const std::string& textureId, const std::string& n)
 	:SpriteGo(textureId,n)
@@ -43,21 +43,48 @@ void Bullet::Update(float dt)
 
 	if (player->GetPlaying())
 	{
-
+		
 		HitBoxPos();
 
+		if (user == User::Enemy && GrazeCollider() && player->GrazeMode())
+		{
+			if (player->GetPower() <= 4.0f)
+			{
+				player->PlusPower(0.05f * dt);
+			}
+			else if (player->GetPower() > 4.0f)
+			{
+				player->SetPower(4.0f);
+			}
+		}
+
 		if (user == User::Player)
+		{
 			sprite.rotate(720 * dt);
+			if (this->type == Types::Line)
+			{
+				SetDirBossPos();
+			}
+		}
+
 
 		if (user == User::Enemy)
 		{
-			if (setFire == 1)
+			if (this->setFire == 1)
 			{
 				BulletPatten1();
 			}
-			if (setFire == 2)
+			else if (this->setFire == 2)
 			{
 				BulletPatten2();
+			}
+			else if (this->setFire == 3)
+			{
+				BulletPatten3();
+			}
+			else if (this->setFire == 4)
+			{
+				BulletPatten4();
 			}
 		}
 		if (delay)
@@ -65,7 +92,7 @@ void Bullet::Update(float dt)
 			delayTime -= dt;
 		}
 		CheckDelay();
-		SetPosition(position + dir * speed * dt);
+
 
 		//if (useRotate && rotateCount > 0 && move)
 		//{
@@ -89,7 +116,7 @@ void Bullet::Update(float dt)
 		//	BulletRotate(-rotateRadin);
 		//}
 
-		if (user == User::Player && BossCollider())
+		if (user == User::Player && BossCollider()&&type==Types::Shape)
 		{
 			SCENE_MGR.GetCurrScene()->RemoveGo(this);
 			SCENE_MGR.GetCurrScene()->RemoveGo(this->hitbox);
@@ -97,6 +124,15 @@ void Bullet::Update(float dt)
 			pool->Return(this);
 			player->PlusScore(1);
 			boss->BossDamage(5);
+		}
+		else if (user == User::Player && BossCollider() && type == Types::Line)
+		{
+			SCENE_MGR.GetCurrScene()->RemoveGo(this);
+			SCENE_MGR.GetCurrScene()->RemoveGo(this->hitbox);
+			hitboxPool->Return(this->hitbox);
+			pool->Return(this);
+			player->PlusScore(1);
+			boss->BossDamage(3);
 		}
 		else if (user == User::Enemy && PlayerCollider() && !player->GetHitDelay())
 		{
@@ -112,6 +148,10 @@ void Bullet::Update(float dt)
 			}
 			player->SetHitDelay(5.f);
 		}
+
+
+
+		SetPosition(position + dir * speed * dt);
 
 		Destroy();
 	}
@@ -179,6 +219,26 @@ void Bullet::SetBulletType(Types pick)
 			SCENE_MGR.GetCurrScene()->AddGo(hitbox);
 			sprite.setTextureRect((sf::IntRect)tRect);
 		}
+		else if (type == Types::Line)
+		{
+			textureId = "graphics/Player.png";
+			sprite.setTexture(*RESOURCE_MGR.GetTexture("graphics/Player.png"));
+			sf::FloatRect tRect;
+			tRect.left = 82.f;
+			tRect.top = 146.f;
+			tRect.width = 14.f;
+			tRect.height = 14.f;
+			hitbox = hitboxPool->Get();
+			hitbox->SetHitBoxSize(7.f);
+			hitbox->SetHitBoxFillColor(sf::Color::Transparent);
+			hitbox->SetHitBoxOutLineColor(sf::Color::Red);
+			hitbox->SetHitBoxOutLineThickness(1);
+			hitbox->SetOrigin(Origins::MC);
+			hitbox->sortLayer = -2;
+			hitbox->SetType(0);
+			SCENE_MGR.GetCurrScene()->AddGo(hitbox);
+			sprite.setTextureRect((sf::IntRect)tRect);
+		}
 	}
 	if (user == User::Enemy)
 	{
@@ -234,10 +294,20 @@ void Bullet::Destroy()
 	}
 }
 
+bool Bullet::GrazeCollider()
+{
+	float disSqur = Utils::Distance(this->hitbox->GetPosition(), player->GetPosition());
+	float combinRadius = this->hitbox->GetRaidus() + player->GetGrazeBox();
+	if (disSqur <= combinRadius)
+	{
+		return true;
+	}
+
+	return false;
+}
+
 bool Bullet::BossCollider()
 {
-	// 화살 포지션 - 몬스터 포지션 < 화살 반지름 + 몬스터 반지름
-
 	float disSqur = Utils::Distance(this->hitbox->GetPosition(), boss->GetPosition());
 	float combinRadius = this->hitbox->GetRaidus() + boss->GetHitBox();
 	if (disSqur <= combinRadius)
@@ -270,7 +340,7 @@ void Bullet::BulletPatten1()
 	}
 	else if(count==1)
 	{
-		SetDelayTime(1.f);
+		SetDelayTime(0.5f);
 	}
 	else if (count == 2)
 	{
@@ -279,7 +349,7 @@ void Bullet::BulletPatten1()
 	}
 	else if (count == 3)
 	{
-		SetDelayTime(1.f);
+		SetDelayTime(0.5f);
 	}
 	else if (count == 4)
 	{
@@ -288,7 +358,7 @@ void Bullet::BulletPatten1()
 	}
 	else if (count == 5)
 	{
-		SetDelayTime(2.f);
+		SetDelayTime(1.5f);
 	}
 	else if (count == 6)
 	{
@@ -297,7 +367,7 @@ void Bullet::BulletPatten1()
 	}
 	else if (count == 7)
 	{
-		SetSpeed(500.f);
+		SetSpeed(300.f);
 		CountUp();
 	}
 	
@@ -313,11 +383,89 @@ void Bullet::BulletPatten2()
 	}
 	else if (count == 1)
 	{
-		SetDelayTime(5.f);
+		SetDelayTime(1.f);
 	}
 	else if (count == 2)
 	{
-		SetSpeed(150.f);
+		SetSpeed(100.f);
 		CountUp();
+	}
+}
+
+void Bullet::BulletPatten3()
+{
+	switch (count)
+	{
+	case 0:
+		SetSpeed(0.f);
+		CountUp();
+		break;
+
+	case 1:
+		SetDelayTime(1.f);
+		break;
+
+	case 2:
+		SetDirPlayerPos();
+		CountUp();
+		break;
+
+	case 3:
+		SetSpeed(Utils::RandomRange(1000.f, 1300.f));
+		CountUp();
+		break;
+	}
+
+
+}
+
+void Bullet::BulletPatten4()
+{
+	switch (count)
+	{
+	case 0:
+		SetSpeed(100.f);
+		CountUp();
+		break;
+	case 1:
+		BulletRotate(15);
+		CountUp();
+		break;
+	case 2:
+		SetDelayTime(0.1f);
+		break;
+	case 3:
+		BulletRotate(15);
+		CountUp();
+		break;
+	case 4:
+		SetDelayTime(0.1f);
+		break;
+	case 5:
+		BulletRotate(15);
+		CountUp();
+		break;
+	case 6:
+		SetDelayTime(0.1f);
+		break;
+	case 7:
+		BulletRotate(15);
+		CountUp();
+		break;
+	case 8:
+		SetDelayTime(0.1f);
+		break;
+	case 9:
+		BulletRotate(15);
+		CountUp();
+		break;
+	case 10:
+		SetDirPlayerPos();
+		CountUp();
+		break;
+	case 11:
+		SetSpeed(600.f);
+		CountUp();
+		break;
 	}
 }

@@ -17,7 +17,7 @@ protected:
 	ObjectPool<HitboxGo>* pool = nullptr;
 public:
 
-	HitboxGo(const std::string& n="");
+	HitboxGo(const std::string& n = "");
 	virtual ~HitboxGo() override;
 
 	virtual void SetPosition(const sf::Vector2f& p);

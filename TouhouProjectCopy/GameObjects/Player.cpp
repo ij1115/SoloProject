@@ -7,6 +7,9 @@
 #include "SceneGame.h"
 #include "SceneMgr.h"
 #include "Bullet.h"
+#include "HitboxGo.h"
+
+
 
 void Player::Init()
 {
@@ -33,6 +36,10 @@ void Player::Reset()
 	timer = attackDelay;
 	control = true;
 	hitDelay = true;
+	grazeMode = false;
+	graze->sortLayer = -2;
+	hitbox->sortLayer = -2;
+
 }
 
 void Player::Release()
@@ -52,7 +59,7 @@ void Player::Update(float dt)
 		{
 
 			animation.Update(dt);
-			HitBoxPos();
+			FollwoPos();
 			SetPosition(position + dir * speed * dt);
 
 			if (hitDelay)
@@ -90,15 +97,20 @@ void Player::Update(float dt)
 
 				Move();
 
-				if (INPUT_MGR.GetKeyDown(sf::Keyboard::LShift))
+				if (INPUT_MGR.GetKey(sf::Keyboard::LShift))
 				{
 					speed = 200.f;
+					graze->sortLayer = 0;
+					hitbox->sortLayer = 5;
+					grazeMode = true;
 				}
 
 				if (INPUT_MGR.GetKeyUp(sf::Keyboard::LShift))
 				{
 					speed = 500.f;
-
+					graze->sortLayer = -2;
+					hitbox->sortLayer = -2;
+					grazeMode = false;
 				}
 			}
 		}
@@ -156,6 +168,65 @@ void Player::Move()
 
 void Player::Fire()
 {
+
+	if (power < 1.0f)
+	{
+		BulletPower_1();
+	}
+	else if (power < 2.f)
+	{
+		BulletPower_1();
+		BulletPower_2({ position.x + 20.f,position.y });
+		BulletPower_2({ position.x - 20.f,position.y });
+	}
+	else if (power < 3.f)
+	{
+		BulletPower_1();
+		BulletPower_3();
+		BulletPower_4();
+		BulletPower_2({ position.x + 20.f,position.y-25.f });
+		BulletPower_2({ position.x - 20.f,position.y-25.f });
+
+	}
+	else if (power < 4.f)
+	{
+		BulletPower_1();
+		BulletPower_3();
+		BulletPower_4();
+		BulletPower_2({ position.x + 20.f,position.y - 25.f });
+		BulletPower_2({ position.x - 20.f,position.y - 25.f });
+		BulletPower_2({ position.x,position.y + 25.f });
+	}
+	else if (power >= 4.f)
+	{
+		BulletPower_1();
+		BulletPower_3();
+		BulletPower_4();
+		BulletPower_2({ position.x + 20.f,position.y+25.f });
+		BulletPower_2({ position.x + 20.f,position.y-25.f });
+		BulletPower_2({ position.x - 20.f,position.y+25.f });
+		BulletPower_2({ position.x - 20.f,position.y-25.f });
+	}
+
+}
+
+void Player::FollwoPos()
+{
+	graze->SetPosition(position);
+	hitbox->SetPosition(position);
+	grazeBox->SetPosition(position);
+}
+float Player::GetHitBox()
+{
+	return this->hitbox->GetRaidus();
+}
+float Player::GetGrazeBox()
+{
+	return this->grazeBox->GetRaidus();
+}
+
+void Player::BulletPower_1()
+{
 	Scene* scene = SCENE_MGR.GetCurrScene();
 	SceneGame* sceneGame = dynamic_cast<SceneGame*>(scene);
 	if (sceneGame != nullptr)
@@ -166,7 +237,7 @@ void Player::Fire()
 		bullet->Init();
 		bullet->Reset();
 		bullet->SetDir({ 0.f, -1.f });
-		bullet->BulletStatPos({ position.x,position.y-25.f});
+		bullet->BulletStatPos({ position.x,position.y - 25.f });
 		bullet->SetDelCount(0);
 		bullet->SetRoCount(0);
 		bullet->SetSpeed(1000.f);
@@ -174,11 +245,61 @@ void Player::Fire()
 	}
 }
 
-void Player::HitBoxPos()
+void Player::BulletPower_2(sf::Vector2f pos)
 {
-	hitbox->SetPosition(position);
+	Scene* scene = SCENE_MGR.GetCurrScene();
+	SceneGame* sceneGame = dynamic_cast<SceneGame*>(scene);
+	if (sceneGame != nullptr)
+	{
+		sceneGame->GetBullet(bullet);
+		bullet->SetUser((Bullet::User)0);
+		bullet->SetBulletType((Bullet::Types)1);
+		bullet->Init();
+		bullet->Reset();
+		bullet->BulletStatPos(pos);
+		bullet->SetDelCount(0);
+		bullet->SetRoCount(0);
+		bullet->SetSpeed(1500.f);
+		sceneGame->AddGo(bullet);
+	}
 }
-float Player::GetHitBox()
+
+void Player::BulletPower_3()
 {
-	return this->hitbox->GetRaidus();
+	Scene* scene = SCENE_MGR.GetCurrScene();
+	SceneGame* sceneGame = dynamic_cast<SceneGame*>(scene);
+	if (sceneGame != nullptr)
+	{
+		sceneGame->GetBullet(bullet);
+		bullet->SetUser((Bullet::User)0);
+		bullet->SetBulletType((Bullet::Types)0);
+		bullet->Init();
+		bullet->Reset();
+		bullet->SetDir({ 0.f, -1.f });
+		bullet->BulletStatPos({ position.x-25.f,position.y - 25.f });
+		bullet->SetDelCount(0);
+		bullet->SetRoCount(0);
+		bullet->SetSpeed(1000.f);
+		sceneGame->AddGo(bullet);
+	}
+}
+
+void Player::BulletPower_4()
+{
+	Scene* scene = SCENE_MGR.GetCurrScene();
+	SceneGame* sceneGame = dynamic_cast<SceneGame*>(scene);
+	if (sceneGame != nullptr)
+	{
+		sceneGame->GetBullet(bullet);
+		bullet->SetUser((Bullet::User)0);
+		bullet->SetBulletType((Bullet::Types)0);
+		bullet->Init();
+		bullet->Reset();
+		bullet->SetDir({ 0.f, -1.f });
+		bullet->BulletStatPos({ position.x+25.f,position.y - 25.f });
+		bullet->SetDelCount(0);
+		bullet->SetRoCount(0);
+		bullet->SetSpeed(1000.f);
+		sceneGame->AddGo(bullet);
+	}
 }

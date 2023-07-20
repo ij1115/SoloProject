@@ -3,8 +3,8 @@
 #include "AnimationController.h"
 #include "HitboxGo.h"
 
-class Bullet;
 class Player;
+class Bullet;
 
 class Boss : public SpriteGo
 {
@@ -17,7 +17,7 @@ protected:
 	sf::Vector2f targetPos;
 	sf::Vector2f dir;
 
-	float maxHp=2000.f;
+	float maxHp=10000.f;
 	float hp;
 
 	float speed = 600.f;
@@ -27,6 +27,7 @@ protected:
 
 	int pCount;
 	int pMaxCount;
+	float pDelay;
 
 	bool pattenActive = false;
 	bool move = false;
@@ -75,12 +76,16 @@ public:
 	void HitBoxPos() { hitbox->SetPosition(position); }
 	void Fire();
 	void Fire2();
+	void Fire3();
+	void Fire4(int c);
 	void Move();
 	sf::Vector2f BezierMove(const sf::Vector2f& pos0, const sf::Vector2f& pos1, const sf::Vector2f& pos2, float moveT);
 
 	void Patten1();
 	void Patten2();
 	void Patten3();
+	void Patten4();
+	void Patten5();
 
 	//패턴 설정 값
 	void SetStartMovePosX(float x) { this->startMovePos.x = x; };

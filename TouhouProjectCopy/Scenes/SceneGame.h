@@ -16,6 +16,8 @@ protected:
 	Boss* boss;
 	HitboxGo* pHitbox;
 	HitboxGo* bHitbox;
+	HitboxGo* grazeBox;
+	SpriteGo* graze;
 	SpriteGo* backGround;
 
 	sf::FloatRect gameViewSize;
@@ -35,28 +37,36 @@ protected:
 	int num5;
 
 	//Ui
-	SpriteGo* bossName;
-	ShapeGo* bossHp;
 	
-	SpriteGo* bossClear;
-	SpriteGo* clearFailed;
+		SpriteGo* bossName;
+		ShapeGo* bossHp;
 
-	SpriteGo* life1;
-	SpriteGo* life2;
+		SpriteGo* bossClear;
+		SpriteGo* clearFailed;
 
-	std::vector<sf::IntRect> font;
+		SpriteGo* life1;
+		SpriteGo* life2;
 
-	SpriteGo* timer1;
-	SpriteGo* timer2;
-	SpriteGo* timer3;
-	SpriteGo* timer4;
-	SpriteGo* timer5;
+		std::vector<sf::IntRect> font;
 
-	SpriteGo* score1;
-	SpriteGo* score2;
-	SpriteGo* score3;
-	SpriteGo* score4;
-	SpriteGo* score5;
+		SpriteGo* timer1;
+		SpriteGo* timer2;
+		SpriteGo* timer3;
+		SpriteGo* timer4;
+		SpriteGo* timer5;
+
+		SpriteGo* score1;
+		SpriteGo* score2;
+		SpriteGo* score3;
+		SpriteGo* score4;
+		SpriteGo* score5;
+
+		SpriteGo* power1;
+		SpriteGo* power2;
+		SpriteGo* power3;
+		SpriteGo* power4;
+		SpriteGo* power5;
+	
 
 public:
 	SceneGame();
@@ -76,6 +86,7 @@ public:
 	void ClearPool(ObjectPool<T>& pool);
 
 	void TimerFont();
+	void PowerFont();
 	void ScoreFont();
 };
 

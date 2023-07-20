@@ -155,6 +155,43 @@ void SceneGame::Init()
 			score5->SetOrigin(Origins::BC);
 			score5->sortLayer = 102;
 		}
+
+		{
+			power1 = (SpriteGo*)AddGo(new SpriteGo("graphics/ascii.png"));
+			power1->sprite.setTextureRect(font[0]);
+			power1->SetPosition(FRAMEWORK.GetWindowSize().x - 180.f, 200.f);
+			power1->sprite.setScale(1.5f, 1.5f);
+			power1->SetOrigin(Origins::BC);
+			power1->sortLayer = 102;
+
+			power2 = (SpriteGo*)AddGo(new SpriteGo("graphics/ascii.png"));
+			power2->sprite.setTextureRect(font[0]);
+			power2->SetPosition(FRAMEWORK.GetWindowSize().x - 160.f, 200.f);
+			power2->sprite.setScale(1.5f, 1.5f);
+			power2->SetOrigin(Origins::BC);
+			power2->sortLayer = 102;
+
+			power3 = (SpriteGo*)AddGo(new SpriteGo("graphics/ascii.png"));
+			power3->sprite.setTextureRect(font[11]);
+			power3->SetPosition(FRAMEWORK.GetWindowSize().x - 140.f, 200.f);
+			power3->sprite.setScale(1.5f, 1.5f);
+			power3->SetOrigin(Origins::BC);
+			power3->sortLayer = 102;
+
+			power4 = (SpriteGo*)AddGo(new SpriteGo("graphics/ascii.png"));
+			power4->sprite.setTextureRect(font[0]);
+			power4->SetPosition(FRAMEWORK.GetWindowSize().x - 130.f, 200.f);
+			power4->sprite.setScale(1.0f, 1.0f);
+			power4->SetOrigin(Origins::BC);
+			power4->sortLayer = 102;
+
+			power5 = (SpriteGo*)AddGo(new SpriteGo("graphics/ascii.png"));
+			power5->sprite.setTextureRect(font[0]);
+			power5->SetPosition(FRAMEWORK.GetWindowSize().x - 120.f, 200.f);
+			power5->sprite.setScale(1.0f, 1.0f);
+			power5->SetOrigin(Origins::BC);
+			power5->sortLayer = 102;
+		}
 	}
 
 	{
@@ -206,15 +243,30 @@ void SceneGame::Init()
 		pHitbox->SetHitBoxOutLineColor(sf::Color::Red);
 		pHitbox->SetHitBoxOutLineThickness(1);
 		pHitbox->SetOrigin(Origins::MC);
-		pHitbox->sortLayer = 5;
+		pHitbox->sortLayer = -2;
 		pHitbox->SetType(0);
 
+		grazeBox = (HitboxGo*)AddGo(new HitboxGo());
+		grazeBox->SetHitBoxSize(45.f);
+		grazeBox->SetHitBoxFillColor(sf::Color::Transparent);
+		grazeBox->SetHitBoxOutLineColor(sf::Color::Red);
+		grazeBox->SetHitBoxOutLineThickness(1);
+		grazeBox->SetOrigin(Origins::MC);
+		grazeBox->sortLayer = -2;
+		grazeBox->SetType(0);
+
+		graze = (SpriteGo*)AddGo(new SpriteGo("graphics/pl00b.png"));
+		graze->sprite.setTextureRect(sf::IntRect(0, 195, 64, 64));
+		graze->SetOrigin(Origins::MC);
+		graze->sortLayer = -2;
 
 		player = (Player*)AddGo(new Player());
 		player->SetGameView(gameViewSize);
-		player->sortLayer = 1;
+		player->sortLayer = 2;
 		player->SetLife(2);
 		player->SetHitBox(pHitbox);
+		player->SetGrazeBox(grazeBox);
+		player->SetGraze(graze);
 
 		backGround = (SpriteGo*)AddGo(new SpriteGo("graphics/stage05a.png"));
 		backGround->sprite.setTextureRect(sf::IntRect(0, 0, 256, 256));
@@ -229,13 +281,14 @@ void SceneGame::Init()
 		bHitbox->SetHitBoxOutLineColor(sf::Color::Red);
 		bHitbox->SetHitBoxOutLineThickness(1);
 		bHitbox->SetOrigin(Origins::MC);
-		bHitbox->sortLayer = 5;
+		bHitbox->sortLayer = -2;
 		bHitbox->SetType(1);
 
 		boss = (Boss*)AddGo(new Boss());
 		boss->SetGameView(gameViewSize);
 		boss->SetPlayer(player);
 		boss->SetHitBox(bHitbox);
+		boss->sortLayer = 1;
 
 		bossHp = (ShapeGo*)AddGo(new ShapeGo());
 		bossHp->SetPosition(41.f, 55.f);
@@ -247,8 +300,8 @@ void SceneGame::Init()
 			bullet->SetPool(&poolBullet);
 			bullet->SetGameView(gameViewSize);
 			bullet->SetHitBoxPool(&poolHitBox);
-			bullet->SetPlayer(player);
 			bullet->SetBoss(boss);
+			bullet->SetPlayer(player);
 		};
 		poolBullet.Init();
 	}
@@ -285,6 +338,7 @@ void SceneGame::Enter()
 	clearFailed->SetActive(false);
 	timer = 90.00f;
 	player->SetScore(0);
+	player->SetPower(0.f);
 	life1->SetActive(true);
 	life2->SetActive(true);
 
@@ -318,6 +372,7 @@ void SceneGame::Update(float dt)
 		timer -= dt;
 
 		backGround->sprite.rotate(20 * dt);
+		graze->sprite.rotate(720 * dt);
 
 		if (player->GetLife() < 1)
 		{
@@ -341,6 +396,7 @@ void SceneGame::Update(float dt)
 
 		TimerFont();
 		ScoreFont();
+		PowerFont();
 	}
 	else if (!playing)
 	{
@@ -388,7 +444,23 @@ void SceneGame::TimerFont()
 	timer4->sprite.setTextureRect(font[num3]);
 	timer5->sprite.setTextureRect(font[num4]);
 }
+void SceneGame::PowerFont()
+{
+	int getHigh = static_cast<int>(player->GetPower());
+	float timerLow = player->GetPower() - static_cast<float>(getHigh);
+	int getLow = static_cast<float>(static_cast<int>(timerLow * 100));
 
+
+	num1 = getHigh / 10;
+	num2 = getHigh % 10;
+	num3 = getLow / 10;
+	num4 = getLow % 10;
+
+	power1->sprite.setTextureRect(font[num1]);
+	power2->sprite.setTextureRect(font[num2]);
+	power4->sprite.setTextureRect(font[num3]);
+	power5->sprite.setTextureRect(font[num4]);
+}
 void SceneGame::ScoreFont()
 {
 	num1 = player->GetScore() % 10;

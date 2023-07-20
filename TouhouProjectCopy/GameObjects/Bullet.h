@@ -1,10 +1,9 @@
 #pragma once
 #include "SpriteGo.h"
+#include "ObjectPool.h"
+#include "HitboxGo.h"
 #include "Boss.h"
 #include "Player.h"
-#include "ObjectPool.h"
-
-class HitboxGo;
 
 class Bullet : public SpriteGo
 {
@@ -69,9 +68,9 @@ public:
 	void GetPlaying(bool playering) { this->playing = &playing; }
 
 	//bullet setting
-	void SetFire(int n) { this->setFire = n; }
 	void SetPlayer(Player* player) { this->player = player; }
 	void SetBoss(Boss* boss) { this->boss = boss; }
+	void SetFire(int n) { this->setFire = n; }
 	void SetPool(ObjectPool<Bullet>* bulletPool);
 	void SetHitBoxPool(ObjectPool<HitboxGo>* hitboxPool);
 	void SetBulletType(Types pick);
@@ -80,6 +79,7 @@ public:
 	void Destroy();
 	void SetSpeed(float s) { this->speed = s; }
 
+	bool GrazeCollider();
 	bool BossCollider();
 	bool PlayerCollider();
 	void SetHitBox(HitboxGo* hitbox) { this->hitbox = hitbox; }
@@ -88,6 +88,7 @@ public:
 
 	//bullet custom
 	void SetDir(sf::Vector2f Dir);
+	void SetDirBossPos() { dir = Utils::Normalize(boss->GetPosition() - this->position); }
 	void SetDirPlayerPos() { dir = Utils::Normalize(player->GetPosition() - this->position); }
 	void SetDelayTime(float t) { if (!delay) { this->delay = true; this->delayTime = t; } }
 	void CheckDelay();
@@ -102,6 +103,8 @@ public:
 	//patten
 	void BulletPatten1();
 	void BulletPatten2();
+	void BulletPatten3();
+	void BulletPatten4();
 //Ãæµ¹  {}
 };
 

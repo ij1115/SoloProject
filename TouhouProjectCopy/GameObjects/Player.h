@@ -1,8 +1,9 @@
 #pragma once
 #include "SpriteGo.h"
 #include "AnimationController.h"
-#include "HitboxGo.h"
+#include "ObjectPool.h"
 
+class HitboxGo;
 class Bullet;
 
 class Player : public SpriteGo
@@ -15,6 +16,7 @@ protected:
 	bool playing;
 	bool control = true;
 	bool hitDelay = true;
+	bool grazeMode = false;
 
 	float hitTimer = 0.f;
 
@@ -24,11 +26,13 @@ protected:
 
 	int life = 0;
 	int score = 0;
+	float power = 0.f;
 	int boom = 0;
 
-	Bullet* bullet;
-	HitboxGo* hitbox;
-	HitboxGo* powerUp;
+	Bullet* bullet = nullptr;
+	HitboxGo* hitbox=nullptr;
+	SpriteGo* graze = nullptr;
+	HitboxGo* grazeBox =nullptr;
 
 	sf::FloatRect gameView;
 	ObjectPool<HitboxGo>* pool = nullptr;
@@ -50,10 +54,13 @@ public:
 	void Move();
 	void Fire();
 
+	void SetGraze(SpriteGo* sprite) { this->graze = sprite; }
 	void SetHitBox(HitboxGo* shape) { this->hitbox = shape; }
-	void HitBoxPos();
+	void SetGrazeBox(HitboxGo* shape) { this->grazeBox = shape; }
+	void FollwoPos();
 
 	float GetHitBox();
+	float GetGrazeBox();
 	bool GetHitDelay() { return hitDelay; }
 	void SetHitDelay(float t) { hitTimer = t; }
 	void LifeDown() { --life; }
@@ -61,8 +68,17 @@ public:
 	void SetLife(int l) { life = l; }
 	void SetPlaying(bool play) { playing = play; }
 	bool GetPlaying() { return playing; }
+	bool GrazeMode() { return grazeMode; }
 	void SetScore(int i) { score = i; }
 	void PlusScore(int i) { score += i; }
 	int GetScore() { return score; }
+	float GetPower() { return power; }
+	void SetPower(float i) { power = i; }
+	void PlusPower(float i) { power += i; }
+
+	void BulletPower_1();
+	void BulletPower_2(sf::Vector2f pos);
+	void BulletPower_3();
+	void BulletPower_4();
 };
 
