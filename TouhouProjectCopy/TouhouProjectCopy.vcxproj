@@ -181,7 +181,8 @@
     <ClCompile Include="Framework\SceneMgr.cpp" />
     <ClCompile Include="GameObjects\SpriteGo.cpp" />
     <ClCompile Include="Global\Variables.cpp" />
-    <ClCompile Include="GameObjects\ShapeGo.cpp" />
+    <ClCompile Include="GameObjects\HitboxGo.cpp" />
+    <ClCompile Include="ShapeGo.cpp" />
     <ClCompile Include="UiButton.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -210,7 +211,8 @@
     <ClInclude Include="Framework\SceneMgr.h" />
     <ClInclude Include="Global\Singleton.h" />
     <ClInclude Include="GameObjects\SpriteGo.h" />
-    <ClInclude Include="GameObjects\ShapeGo.h" />
+    <ClInclude Include="GameObjects\HitboxGo.h" />
+    <ClInclude Include="ShapeGo.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="Global\Variables.h" />
     <ClInclude Include="UiButton.h" />

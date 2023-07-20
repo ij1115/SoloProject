@@ -12,23 +12,27 @@
 
 void Boss::Init()
 {
+	SpriteGo::Init();
+
 	bossAnimation.AddClip(*RESOURCE_MGR.GetAnimationClip("Animations/BossIdle.csv"));
 	bossAnimation.AddClip(*RESOURCE_MGR.GetAnimationClip("Animations/BossRightMove.csv"));
 	bossAnimation.AddClip(*RESOURCE_MGR.GetAnimationClip("Animations/BossLeftMove.csv"));
 	bossAnimation.AddClip(*RESOURCE_MGR.GetAnimationClip("Animations/BossAction.csv"));
 
 	bossAnimation.SetTarget(&sprite);
-	
-	//this->sprite.setScale(1.f, 1.f);
 
 	SetOrigin(Origins::MC);
 }
 
 void Boss::Reset()
 {
-	SetPosition(gameView.left + gameView.width / 2, gameView.top + 100.f);
+	SpriteGo::Reset();
+
+	SetPosition(gameView.left + gameView.width / 2, gameView.top -100.f);
 	bossAnimation.Play("BossIdle");
 	SetOrigin(origin);
+	SetActive(true);
+	action = false;
 	speed = 0.0f;
 	timer = 0.f;
 	dir = { 0.f,0.f };
@@ -38,74 +42,80 @@ void Boss::Reset()
 
 void Boss::Release()
 {
+	SpriteGo::Release();
+
 	SCENE_MGR.GetCurrScene()->RemoveGo(this->hitbox);
 	pool->Return(this->hitbox);
 }
 
 void Boss::Update(float dt)
 {
-	std::cout << hp << std::endl;
 	SpriteGo::Update(dt);
 	bossAnimation.Update(dt);
-	HitBoxPos();
-	//std::cout << delayTime << std::endl;
 
-	if (!action)
+	if (player->GetPlaying())
 	{
-		actionNum = Utils::RandomRange(1, 4);
-		action = true;
-	}
-	else if (action&&actionNum == 1)
-	{
-		Patten1();
-	}
-	else if (action && actionNum == 2)
-	{
-		Patten2();
-	}
-	else if(action && actionNum==3)
-	{
-		Patten3();
 
+		HitBoxPos();
+		//std::cout << delayTime << std::endl;
+		//std::cout << hp << std::endl;
+
+		if (!action)
+		{
+			actionNum = Utils::RandomRange(1, 4);
+			action = true;
+		}
+		else if (action && actionNum == 1)
+		{
+			Patten1();
+		}
+		else if (action && actionNum == 2)
+		{
+			Patten2();
+		}
+		else if (action && actionNum == 3)
+		{
+			Patten3();
+
+		}
+
+		if (delay)
+		{
+			delayTime -= dt;
+		}
+
+		if (!move)
+		{
+			dir = { 0.f,0.f };
+		}
+
+		timer += dt * speed;
+
+		if (timer > 1.f)
+		{
+			timer = 1.f;
+		}
+
+		Move();
+
+
+		if (curve && !strike)
+		{
+			position = BezierMove(startMovePos, middleMovePos, endMovePos, timer);
+		}
+		else if (!curve && strike)
+		{
+			position += dir * speed * dt;
+		}
+
+		SetPosition(position);
 	}
-	
-	if (delay)
-	{
-		delayTime -= dt;
-	}
-
-	if (!move)
-	{
-		dir = { 0.f,0.f };
-	}
-
-	timer += dt * speed;
-
-	if (timer > 1.f)
-	{
-		timer = 1.f;
-	}
-
-	Move();
-
-
-	if(curve&&!strike)
-	{ 
-		position = BezierMove(startMovePos, middleMovePos, endMovePos, timer);
-	}
-	else if(!curve&&strike)
-	{
-		position += dir * speed * dt;
-	}
-
-	SetPosition(position);
 }
 
-void Boss::SetHitBoxPool(ObjectPool<ShapeGo>* hitBoxPool)
+void Boss::SetHitBoxPool(ObjectPool<HitboxGo>* hitBoxPool)
 {
 	this->pool = hitBoxPool;
 }
-
 
 void Boss::SetTargetPos()
 {
@@ -400,5 +410,6 @@ float Boss::GetHitBox()
 {
 	return this->hitbox->GetRaidus();
 }
+
 //gameViewSize.width = 914.5f;
 //gameViewSize.height = 640.f;

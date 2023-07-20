@@ -10,6 +10,8 @@
 
 void Player::Init()
 {
+	SpriteGo::Init();
+
 	animation.AddClip(*RESOURCE_MGR.GetAnimationClip("Animations/PlayerIdle.csv"));
 	animation.AddClip(*RESOURCE_MGR.GetAnimationClip("Animations/PlayerRightMove.csv"));
 	animation.AddClip(*RESOURCE_MGR.GetAnimationClip("Animations/PlayerLeftMove.csv"));
@@ -21,6 +23,8 @@ void Player::Init()
 
 void Player::Reset()
 {
+	SpriteGo::Reset();
+
 	SetPosition(gameView.left+gameView.width/2, gameView.top + gameView.height + 50.f);
 	dir = { 0.f,-1.f };
 	animation.Play("PlayerIdle");
@@ -33,67 +37,74 @@ void Player::Reset()
 
 void Player::Release()
 {
+	SpriteGo::Release();
+
 	SCENE_MGR.GetCurrScene()->RemoveGo(this->hitbox);
 	pool->Return(this->hitbox);
 }
 
 void Player::Update(float dt)
 {
-	HitBoxPos();
-	SetPosition(position + dir * speed * dt);
 
-	if (hitDelay)
-	{
-		hitTimer -= dt;
+		SpriteGo::Update(dt);
 
-		if (hitTimer < 0.f)
-
+		if (playing)
 		{
-			hitDelay = false;
+
+			animation.Update(dt);
+			HitBoxPos();
+			SetPosition(position + dir * speed * dt);
+
+			if (hitDelay)
+			{
+				hitTimer -= dt;
+
+				if (hitTimer < 0.f)
+
+				{
+					hitDelay = false;
+				}
+			}
+
+			if (control && position.y < gameView.top + gameView.height - 50.f)
+			{
+				control = false;
+				speed = 500.f;
+			}
+			else if (!control)
+			{
+				dir.x = INPUT_MGR.GetAxisRaw(Axis::Horizontal);
+				dir.y = INPUT_MGR.GetAxisRaw(Axis::Vertical);
+
+				MovingLimit();
+
+				this->timer -= dt;
+
+				if (this->timer < 0.f && INPUT_MGR.GetKey(sf::Keyboard::Z))
+				{
+					this->timer = attackDelay;
+
+					//std::cout << "attack" << std::endl;
+					Fire();
+				}
+
+				Move();
+
+				if (INPUT_MGR.GetKeyDown(sf::Keyboard::LShift))
+				{
+					speed = 200.f;
+				}
+
+				if (INPUT_MGR.GetKeyUp(sf::Keyboard::LShift))
+				{
+					speed = 500.f;
+
+				}
+			}
 		}
-	}
-
-	if (control && position.y  < gameView.top + gameView.height -50.f)
-	{
-		control = false;
-		speed = 500.f;
-	}
-	else if (!control)
-	{
-		dir.x = INPUT_MGR.GetAxisRaw(Axis::Horizontal);
-		dir.y = INPUT_MGR.GetAxisRaw(Axis::Vertical);
-
-		MovingLimit();
-
-		this->timer -= dt;
-
-		if (this->timer < 0.f && INPUT_MGR.GetKey(sf::Keyboard::Z))
-		{
-			this->timer = attackDelay;
-
-			//std::cout << "attack" << std::endl;
-			Fire();
-		}
-
-		Move();
-
-		if (INPUT_MGR.GetKeyDown(sf::Keyboard::LShift))
-		{
-			speed = 200.f;
-		}
-
-		if (INPUT_MGR.GetKeyUp(sf::Keyboard::LShift))
-		{
-			speed = 500.f;
-
-		}
-	}
-
-	animation.Update(dt);
-	SpriteGo::Update(dt);
 }
 
-void Player::SetHitBoxPool(ObjectPool<ShapeGo>* hitBoxPool)
+void Player::SetHitBoxPool(ObjectPool<HitboxGo>* hitBoxPool)
 {
 	this->pool = hitBoxPool;
 }

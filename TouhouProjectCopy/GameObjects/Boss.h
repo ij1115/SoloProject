@@ -1,7 +1,7 @@
 #pragma once
 #include "SpriteGo.h"
 #include "AnimationController.h"
-#include "ShapeGo.h"
+#include "HitboxGo.h"
 
 class Bullet;
 class Player;
@@ -46,9 +46,9 @@ protected:
 
 	Bullet* bullet;
 	Player* player;
-	ShapeGo* hitbox;
+	HitboxGo* hitbox;
 
-	ObjectPool<ShapeGo>* pool = nullptr;
+	ObjectPool<HitboxGo>* pool = nullptr;
 public:
 	Boss(const std::string& textureId = "", const std::string& n = "")
 		: SpriteGo(textureId, n) {}
@@ -60,7 +60,7 @@ public:
 	virtual void Update(float dt) override;
 
 
-	void SetHitBoxPool(ObjectPool<ShapeGo>* hitBoxPool);
+	void SetHitBoxPool(ObjectPool<HitboxGo>* hitBoxPool);
 
 	void SetGameView(sf::FloatRect size)
 	{
@@ -71,7 +71,7 @@ public:
 
 	void SetTargetPos();
 	void SetPlayer(Player* player);
-	void SetHitBox(ShapeGo* hitbox) { this->hitbox = hitbox; }
+	void SetHitBox(HitboxGo* hitbox) { this->hitbox = hitbox; }
 	void HitBoxPos() { hitbox->SetPosition(position); }
 	void Fire();
 	void Fire2();
@@ -118,7 +118,10 @@ public:
 
 	float GetHitBox();
 
-	void BossDamage(float damage) { hp -= damage; }
+	void BossDamage(float damage) {
+		if (hp > 0)hp -= damage;
+		else if (hp < 0)hp = 0.f;
+	}
 	float GetBossHp() { return hp; }
-
+	float GetBossMaxHp() { return maxHp; }
 };

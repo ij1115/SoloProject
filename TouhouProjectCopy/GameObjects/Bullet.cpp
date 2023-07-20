@@ -4,7 +4,7 @@
 #include "SceneMgr.h"
 #include "SceneGame.h"
 #include "ResourceMgr.h"
-#include "ShapeGo.h"
+#include "HitboxGo.h"
 
 Bullet::Bullet(const std::string& textureId, const std::string& n)
 	:SpriteGo(textureId,n)
@@ -41,72 +41,80 @@ void Bullet::Update(float dt)
 {
 	SpriteGo::Update(dt);
 
-	HitBoxPos();
-
-	if(user==User::Player)
-	sprite.rotate(720 * dt);
-
-	if (user==User::Enemy)
+	if (player->GetPlaying())
 	{
-		if (setFire == 1)
+
+		HitBoxPos();
+
+		if (user == User::Player)
+			sprite.rotate(720 * dt);
+
+		if (user == User::Enemy)
 		{
-			BulletPatten1();
+			if (setFire == 1)
+			{
+				BulletPatten1();
+			}
+			if (setFire == 2)
+			{
+				BulletPatten2();
+			}
 		}
-		if (setFire == 2)
+		if (delay)
 		{
-			BulletPatten2();
+			delayTime -= dt;
 		}
-	}
-	if (delay)
-	{
-		delayTime -= dt;
-	}
-	CheckDelay();
-	SetPosition(position + dir * speed * dt);
+		CheckDelay();
+		SetPosition(position + dir * speed * dt);
 
-	//if (useRotate && rotateCount > 0 && move)
-	//{
-	//	--rotateCount;
-	//	BulletRotate(rotateRadin);
-	//}
+		//if (useRotate && rotateCount > 0 && move)
+		//{
+		//	--rotateCount;
+		//	BulletRotate(rotateRadin);
+		//}
 
-	//if (useDelayTime&& delayCount>0&&move)
-	//{	
-	//	move = false;
-	//	temp = dir;
-	//	dir = { 0.f,0.f };
-	//	--delayCount;
-	//	delayTime = sleepTime;
-	//
-	//}
-	//else if (delayTime < 0.f && !move)
-	//{
-	//	dir = temp;
-	//	move = true;
-	//	BulletRotate(-rotateRadin);
-	//}
+		//if (useDelayTime&& delayCount>0&&move)
+		//{	
+		//	move = false;
+		//	temp = dir;
+		//	dir = { 0.f,0.f };
+		//	--delayCount;
+		//	delayTime = sleepTime;
+		//
+		//}
+		//else if (delayTime < 0.f && !move)
+		//{
+		//	dir = temp;
+		//	move = true;
+		//	BulletRotate(-rotateRadin);
+		//}
 
-	if (user == User::Player&& BossCollider())
-	{
-		SCENE_MGR.GetCurrScene()->RemoveGo(this);
-		SCENE_MGR.GetCurrScene()->RemoveGo(this->hitbox);
-		hitboxPool->Return(this->hitbox);
-		pool->Return(this);
-		std::cout << "Damage" << std::endl;
-		boss->BossDamage(1);
+		if (user == User::Player && BossCollider())
+		{
+			SCENE_MGR.GetCurrScene()->RemoveGo(this);
+			SCENE_MGR.GetCurrScene()->RemoveGo(this->hitbox);
+			hitboxPool->Return(this->hitbox);
+			pool->Return(this);
+			player->PlusScore(1);
+			boss->BossDamage(5);
+		}
+		else if (user == User::Enemy && PlayerCollider() && !player->GetHitDelay())
+		{
+			SCENE_MGR.GetCurrScene()->RemoveGo(this);
+			SCENE_MGR.GetCurrScene()->RemoveGo(this->hitbox);
+			hitboxPool->Return(this->hitbox);
+			pool->Return(this);
+
+			player->LifeDown();
+			if (player->GetLife())
+			{
+				player->Reset();
+			}
+			player->SetHitDelay(5.f);
+		}
+
+		Destroy();
 	}
-	else if(user == User::Enemy&& PlayerCollider()&&!player->GetHitDelay())
-	{
-		SCENE_MGR.GetCurrScene()->RemoveGo(this);
-		SCENE_MGR.GetCurrScene()->RemoveGo(this->hitbox);
-		hitboxPool->Return(this->hitbox);
-		pool->Return(this);
-		std::cout << "HIT" << std::endl;
-		player->Reset();
-		player->SetHitDelay(5.f);
-	}
-
-	Destroy();
 }
 
 void Bullet::SetPool(ObjectPool<Bullet>* bulletPool)
@@ -114,7 +122,7 @@ void Bullet::SetPool(ObjectPool<Bullet>* bulletPool)
 	this->pool = bulletPool;
 }
 
-void Bullet::SetHitBoxPool(ObjectPool<ShapeGo>* hitboxPool)
+void Bullet::SetHitBoxPool(ObjectPool<HitboxGo>* hitboxPool)
 {
 	this->hitboxPool = hitboxPool;
 }
@@ -217,6 +225,8 @@ void Bullet::Destroy()
 	if (this->position.x > gameView.left + gameView.width + 100.f || this->position.x < gameView.left -100.f ||
 		this->position.y > gameView.top + gameView.height +100.f || this->position.y < gameView.top -100.f)
 	{
+		this->hitbox->Reset();
+		this->Reset();
 		SCENE_MGR.GetCurrScene()->RemoveGo(this);
 		SCENE_MGR.GetCurrScene()->RemoveGo(this->hitbox);
 		hitboxPool->Return(this->hitbox);

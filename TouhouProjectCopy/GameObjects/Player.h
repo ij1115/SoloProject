@@ -1,7 +1,7 @@
 #pragma once
 #include "SpriteGo.h"
 #include "AnimationController.h"
-#include "ShapeGo.h"
+#include "HitboxGo.h"
 
 class Bullet;
 
@@ -12,6 +12,7 @@ protected:
 
 	sf::Vector2f dir;
 
+	bool playing;
 	bool control = true;
 	bool hitDelay = true;
 
@@ -21,13 +22,16 @@ protected:
 	float timer = 0.f;
 	float attackDelay = 0.05f;
 
+	int life = 0;
+	int score = 0;
 	int boom = 0;
 
 	Bullet* bullet;
-	ShapeGo* hitbox;
+	HitboxGo* hitbox;
+	HitboxGo* powerUp;
 
 	sf::FloatRect gameView;
-	ObjectPool<ShapeGo>* pool = nullptr;
+	ObjectPool<HitboxGo>* pool = nullptr;
 public:
 	Player(const std::string& textureId= "", const std::string& n= "")
 		: SpriteGo(textureId,n) {}
@@ -38,7 +42,7 @@ public:
 	virtual void Release() override;
 	virtual void Update(float dt) override;
 
-	void SetHitBoxPool(ObjectPool<ShapeGo>* hitBoxPool);
+	void SetHitBoxPool(ObjectPool<HitboxGo>* hitBoxPool);
 
 	void SetGameView(sf::FloatRect size) { gameView = size; }
 
@@ -46,11 +50,19 @@ public:
 	void Move();
 	void Fire();
 
-	void SetHitBox(ShapeGo* shape) { this->hitbox = shape; }
+	void SetHitBox(HitboxGo* shape) { this->hitbox = shape; }
 	void HitBoxPos();
 
 	float GetHitBox();
 	bool GetHitDelay() { return hitDelay; }
 	void SetHitDelay(float t) { hitTimer = t; }
+	void LifeDown() { --life; }
+	int GetLife() { return life; }
+	void SetLife(int l) { life = l; }
+	void SetPlaying(bool play) { playing = play; }
+	bool GetPlaying() { return playing; }
+	void SetScore(int i) { score = i; }
+	void PlusScore(int i) { score += i; }
+	int GetScore() { return score; }
 };
 

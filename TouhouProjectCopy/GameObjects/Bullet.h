@@ -4,7 +4,7 @@
 #include "Player.h"
 #include "ObjectPool.h"
 
-class ShapeGo;
+class HitboxGo;
 
 class Bullet : public SpriteGo
 {
@@ -20,6 +20,8 @@ public:
 		Line,
 	};
 protected:
+	bool playing;
+
 	int setFire = 0;
 	int count = 0;
 	float speed = 1000.f;
@@ -46,13 +48,13 @@ protected:
 	sf::Vector2f view;
 	sf::FloatRect gameView;
 
-	ShapeGo* hitbox;
+	HitboxGo* hitbox;
 
 	Boss* boss = nullptr;
 	Player* player = nullptr;
 
 	ObjectPool<Bullet>* pool= nullptr;
-	ObjectPool<ShapeGo>* hitboxPool = nullptr;
+	ObjectPool<HitboxGo>* hitboxPool = nullptr;
 
 public:
 	Bullet(const std::string& textureId="", const std::string& n="");
@@ -64,13 +66,14 @@ public:
 	virtual void Update(float dt) override;
 
 	void SetGameView(sf::FloatRect size) { gameView = size; }
+	void GetPlaying(bool playering) { this->playing = &playing; }
 
 	//bullet setting
 	void SetFire(int n) { this->setFire = n; }
 	void SetPlayer(Player* player) { this->player = player; }
 	void SetBoss(Boss* boss) { this->boss = boss; }
 	void SetPool(ObjectPool<Bullet>* bulletPool);
-	void SetHitBoxPool(ObjectPool<ShapeGo>* hitboxPool);
+	void SetHitBoxPool(ObjectPool<HitboxGo>* hitboxPool);
 	void SetBulletType(Types pick);
 	void SetUser(User pick);
 	void SetCount() { this->count =0; }
@@ -79,7 +82,7 @@ public:
 
 	bool BossCollider();
 	bool PlayerCollider();
-	void SetHitBox(ShapeGo* hitbox) { this->hitbox = hitbox; }
+	void SetHitBox(HitboxGo* hitbox) { this->hitbox = hitbox; }
 	void HitBoxPos() { hitbox->SetPosition(position); }
 
 

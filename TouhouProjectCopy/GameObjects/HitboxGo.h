@@ -7,18 +7,18 @@ enum class Types
 	Player,
 	Boss,
 };
-class ShapeGo : public GameObject
+class HitboxGo : public GameObject
 {
 protected:
 	//sf::RectangleShape shape;
 	sf::CircleShape shape;
 	Types type;
 
-	ObjectPool<ShapeGo>* pool = nullptr;
+	ObjectPool<HitboxGo>* pool = nullptr;
 public:
 
-	ShapeGo(const std::string& n="");
-	virtual ~ShapeGo() override;
+	HitboxGo(const std::string& n="");
+	virtual ~HitboxGo() override;
 
 	virtual void SetPosition(const sf::Vector2f& p);
 	virtual void SetPosition(float x, float y);
@@ -37,7 +37,7 @@ public:
 	void SetHitBoxOutLineColor(sf::Color c) { shape.setOutlineColor(c); }
 	void SetHitBoxOutLineThickness(float t) { shape.setOutlineThickness(t); }
 	void SetType(int n) { type = (Types)n; }
-	void SetPool(ObjectPool<ShapeGo>* hitBoxPool);
+	void SetPool(ObjectPool<HitboxGo>* hitBoxPool);
 	sf::FloatRect GetCollider();
 	float GetRaidus() { return shape.getRadius(); }
 	sf::Vector2f GetPos() { return this->GetPosition(); }

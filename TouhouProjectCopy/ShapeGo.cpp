@@ -2,7 +2,6 @@
 #include "ShapeGo.h"
 
 ShapeGo::ShapeGo(const std::string& n)
-	: GameObject(n)
 {
 }
 
@@ -53,14 +52,4 @@ void ShapeGo::Reset()
 
 void ShapeGo::Update(float dt)
 {
-}
-
-void ShapeGo::SetPool(ObjectPool<ShapeGo>* hitBoxPool)
-{
-	this->pool = hitBoxPool;
-}
-
-sf::FloatRect ShapeGo::GetCollider()
-{
-	return this->shape.getGlobalBounds();
 }
