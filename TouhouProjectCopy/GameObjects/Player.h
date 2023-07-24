@@ -10,6 +10,8 @@ class Player : public SpriteGo
 {
 protected:
 	AnimationController animation;
+	sf::Sound pDead;
+	sf::Sound bFire;
 
 	sf::Vector2f dir;
 
@@ -31,6 +33,7 @@ protected:
 
 	Bullet* bullet = nullptr;
 	HitboxGo* hitbox=nullptr;
+	SpriteGo* Immortal = nullptr;
 	SpriteGo* graze = nullptr;
 	HitboxGo* grazeBox =nullptr;
 
@@ -54,6 +57,7 @@ public:
 	void Move();
 	void Fire();
 
+	void SetImmortal(SpriteGo* sprite) { this->Immortal = sprite; }
 	void SetGraze(SpriteGo* sprite) { this->graze = sprite; }
 	void SetHitBox(HitboxGo* shape) { this->hitbox = shape; }
 	void SetGrazeBox(HitboxGo* shape) { this->grazeBox = shape; }
@@ -63,6 +67,7 @@ public:
 	float GetGrazeBox();
 	bool GetHitDelay() { return hitDelay; }
 	void SetHitDelay(float t) { hitTimer = t; }
+	void PlayerDead();
 	void LifeDown() { --life; }
 	int GetLife() { return life; }
 	void SetLife(int l) { life = l; }

@@ -165,7 +165,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="GameObjects\SpriteEffect.cpp" />
+    <ClCompile Include="GameObjects\BulletEffect.cpp" />
     <ClCompile Include="GameObjects\VertexArrayGo.cpp" />
     <ClCompile Include="Global\Utils.cpp" />
     <ClCompile Include="main.cpp">
@@ -174,15 +174,16 @@
     </ClCompile>
     <ClCompile Include="Framework\ResourceMgr.cpp" />
     <ClCompile Include="GameObjects\Player.cpp" />
-    <ClCompile Include="PattenInfo.cpp" />
-    <ClCompile Include="PattenMgr.cpp" />
+    <ClCompile Include="DataTables\PattenInfo.cpp" />
+    <ClCompile Include="DataTables\PattenMgr.cpp" />
     <ClCompile Include="Scenes\Scene.cpp" />
     <ClCompile Include="Scenes\SceneGame.cpp" />
     <ClCompile Include="Framework\SceneMgr.cpp" />
     <ClCompile Include="GameObjects\SpriteGo.cpp" />
     <ClCompile Include="Global\Variables.cpp" />
     <ClCompile Include="GameObjects\HitboxGo.cpp" />
-    <ClCompile Include="ShapeGo.cpp" />
+    <ClCompile Include="GameObjects\ShapeGo.cpp" />
+    <ClCompile Include="SceneTitle.cpp" />
     <ClCompile Include="UiButton.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -196,7 +197,7 @@
     <ClInclude Include="Framework\DataTableMgr.h" />
     <ClInclude Include="Framework\ObjectPool.h" />
     <ClInclude Include="GameObjects\GameObject.h" />
-    <ClInclude Include="GameObjects\SpriteEffect.h" />
+    <ClInclude Include="GameObjects\BulletEffect.h" />
     <ClInclude Include="GameObjects\VertexArrayGo.h" />
     <ClInclude Include="Global\Defines.h" />
     <ClInclude Include="Framework\Framework.h" />
@@ -204,15 +205,16 @@
     <ClInclude Include="Framework\ResourceMgr.h" />
     <ClInclude Include="Global\Utils.h" />
     <ClInclude Include="GameObjects\Player.h" />
-    <ClInclude Include="PattenInfo.h" />
-    <ClInclude Include="PattenMgr.h" />
+    <ClInclude Include="DataTables\PattenInfo.h" />
+    <ClInclude Include="DataTables\PattenMgr.h" />
     <ClInclude Include="Scenes\Scene.h" />
     <ClInclude Include="Scenes\SceneGame.h" />
     <ClInclude Include="Framework\SceneMgr.h" />
     <ClInclude Include="Global\Singleton.h" />
     <ClInclude Include="GameObjects\SpriteGo.h" />
     <ClInclude Include="GameObjects\HitboxGo.h" />
-    <ClInclude Include="ShapeGo.h" />
+    <ClInclude Include="GameObjects\ShapeGo.h" />
+    <ClInclude Include="SceneTitle.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="Global\Variables.h" />
     <ClInclude Include="UiButton.h" />

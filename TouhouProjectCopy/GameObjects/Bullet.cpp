@@ -21,11 +21,13 @@ void Bullet::Init()
 
 	view = FRAMEWORK.GetWindowSize();
 
+
 	SetOrigin(Origins::MC);
 }
 
 void Bullet::Reset()
 {
+	
 	SpriteGo::Reset();
 
 	float speed = 0.f;
@@ -35,6 +37,7 @@ void Bullet::Reset()
 	dir = { 0.f,0.f };
 
 	sortLayer = 1;
+
 }
 
 void Bullet::Update(float dt)
@@ -116,8 +119,19 @@ void Bullet::Update(float dt)
 		//	BulletRotate(-rotateRadin);
 		//}
 
-		if (user == User::Player && BossCollider()&&type==Types::Shape)
+		if (user == User::Player && BossCollider() && type == Types::Shape)
 		{
+			BulletEffect* effect = effectPool->Get();
+			effect->textureId = "graphics/Player.png";
+			effect->sprite.setTexture(*RESOURCE_MGR.GetTexture("graphics/Player.png"));
+			effect->sprite.setTextureRect(sf::IntRect(177, 160, 16, 17));
+			effect->SetPosition(this->GetPosition());
+			effect->SetOrigin(Origins::MC);
+			effect->SetDirection({0.f, -1.f});
+			effect->SetSpeed(50.f);
+			effect->SetDuration(0.3f);
+			effect->sortLayer = 3;
+			SCENE_MGR.GetCurrScene()->AddGo(effect);
 			SCENE_MGR.GetCurrScene()->RemoveGo(this);
 			SCENE_MGR.GetCurrScene()->RemoveGo(this->hitbox);
 			hitboxPool->Return(this->hitbox);
@@ -127,6 +141,15 @@ void Bullet::Update(float dt)
 		}
 		else if (user == User::Player && BossCollider() && type == Types::Line)
 		{
+			BulletEffect* effect = effectPool->Get();
+			effect->textureId = "graphics/etama6.png";
+			effect->sprite.setTexture(*RESOURCE_MGR.GetTexture("graphics/etama6.png"));
+			effect->sprite.setTextureRect(sf::IntRect(35,162, 26, 26));
+			effect->SetPosition(this->GetPosition());
+			effect->SetOrigin(Origins::MC);
+			effect->SetDuration(0.3f);
+			effect->sortLayer = 3;
+			SCENE_MGR.GetCurrScene()->AddGo(effect);
 			SCENE_MGR.GetCurrScene()->RemoveGo(this);
 			SCENE_MGR.GetCurrScene()->RemoveGo(this->hitbox);
 			hitboxPool->Return(this->hitbox);
@@ -141,14 +164,22 @@ void Bullet::Update(float dt)
 			hitboxPool->Return(this->hitbox);
 			pool->Return(this);
 
-			player->LifeDown();
-			if (player->GetLife())
+			for (int i = 0; i < 5; ++i)
 			{
-				player->Reset();
+				BulletEffect* effect = effectPool->Get();
+				effect->textureId = "graphics/Player.png";
+				effect->sprite.setTexture(*RESOURCE_MGR.GetTexture("graphics/Player.png"));
+				effect->sprite.setTextureRect(sf::IntRect(261, 4, 57, 57));
+				effect->SetPosition(player->GetPosition());
+				effect->SetOrigin(Origins::MC);
+				effect->SetDirection({ Utils::RandomRange(-1.f, 1.f), Utils::RandomRange(-1.f, 1.f) });
+				effect->SetDuration(0.3f);
+				effect->SetSpeed(300.f);
+				effect->sortLayer = 1;
+				SCENE_MGR.GetCurrScene()->AddGo(effect);
 			}
-			player->SetHitDelay(5.f);
+			player->PlayerDead();
 		}
-
 
 
 		SetPosition(position + dir * speed * dt);
@@ -165,6 +196,11 @@ void Bullet::SetPool(ObjectPool<Bullet>* bulletPool)
 void Bullet::SetHitBoxPool(ObjectPool<HitboxGo>* hitboxPool)
 {
 	this->hitboxPool = hitboxPool;
+}
+
+void Bullet::SetEffectPool(ObjectPool<BulletEffect>* effectPool)
+{
+	this->effectPool = effectPool;
 }
 
 void Bullet::CheckDelay()

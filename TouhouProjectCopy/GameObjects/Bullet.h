@@ -4,6 +4,7 @@
 #include "HitboxGo.h"
 #include "Boss.h"
 #include "Player.h"
+#include "BulletEffect.h"
 
 class Bullet : public SpriteGo
 {
@@ -54,6 +55,7 @@ protected:
 
 	ObjectPool<Bullet>* pool= nullptr;
 	ObjectPool<HitboxGo>* hitboxPool = nullptr;
+	ObjectPool<BulletEffect>* effectPool = nullptr;
 
 public:
 	Bullet(const std::string& textureId="", const std::string& n="");
@@ -73,6 +75,7 @@ public:
 	void SetFire(int n) { this->setFire = n; }
 	void SetPool(ObjectPool<Bullet>* bulletPool);
 	void SetHitBoxPool(ObjectPool<HitboxGo>* hitboxPool);
+	void SetEffectPool(ObjectPool<BulletEffect>* effectPool);
 	void SetBulletType(Types pick);
 	void SetUser(User pick);
 	void SetCount() { this->count =0; }

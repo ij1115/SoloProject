@@ -28,6 +28,8 @@ void Boss::Reset()
 {
 	SpriteGo::Reset();
 
+	hit.setBuffer(*RESOURCE_MGR.GetSoundBuffer("sound/se_damage00.wav"));
+	hit.setVolume(25);
 	SetPosition(gameView.left + gameView.width / 2, gameView.top -100.f);
 	bossAnimation.Play("BossIdle");
 	SetOrigin(origin);
@@ -633,6 +635,7 @@ void Boss::Patten5()
 		pCount = 0;
 		pDelay = 0.001f;
 		break;
+
 	case 1:
 		PoseTrue();
 		if (pCount < pMaxCount && pDelay < 0.f)
@@ -656,24 +659,67 @@ void Boss::Patten5()
 		break;
 
 	case 3:
-			if (pCount < pMaxCount && pDelay < 0.f)
-			{
-				Fire4(pCount);
-				pCount++;
-				pDelay = 0.01f;
-			}
-			else if (pMaxCount <= pCount)
-			{
-				CountUp();
-			}
-			break;
+		if (pCount < pMaxCount && pDelay < 0.f)
+		{
+			Fire4(pCount);
+			pCount++;
+			pDelay = 0.01f;
+		}
+		else if (pMaxCount <= pCount)
+		{
+			CountUp();
+		}
+		break;
+
 	case 4:
-		PoseFalse();
-		SetdelayTime(1.f);
+		SetdelayTime(0.1f);
+		pMaxCount = 100;
+		pCount = 0;
+		pDelay = 0.001f;
 		TimeOut();
 		break;
 
 	case 5:
+		if (pCount < pMaxCount && pDelay < 0.f)
+		{
+			Fire4(pCount);
+			pCount++;
+			pDelay = 0.01f;
+		}
+		else if (pMaxCount <= pCount)
+		{
+			CountUp();
+		}
+		break;
+
+	case 6:
+		SetdelayTime(0.1f);
+		pMaxCount = 100;
+		pCount = 0;
+		pDelay = 0.001f;
+		TimeOut();
+		break;
+
+	case 7:
+		if (pCount < pMaxCount && pDelay < 0.f)
+		{
+			Fire4(pCount);
+			pCount++;
+			pDelay = 0.01f;
+		}
+		else if (pMaxCount <= pCount)
+		{
+			CountUp();
+		}
+		break;
+
+	case 8:
+		SetdelayTime(1.f);
+		TimeOut();
+		break;
+
+	case 9:
+		PoseFalse();
 		action = false;
 		count = 0;
 		break;

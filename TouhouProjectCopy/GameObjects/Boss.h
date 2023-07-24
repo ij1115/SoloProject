@@ -44,6 +44,7 @@ protected:
 
 	sf::FloatRect gameView;
 	sf::Vector2f center;
+	sf::Sound hit;
 
 	Bullet* bullet;
 	Player* player;
@@ -124,6 +125,7 @@ public:
 	float GetHitBox();
 
 	void BossDamage(float damage) {
+		hit.play();
 		if (hp > 0)hp -= damage;
 		else if (hp < 0)hp = 0.f;
 	}

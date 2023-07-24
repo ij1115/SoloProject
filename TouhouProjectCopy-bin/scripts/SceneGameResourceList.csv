@@ -9,4 +9,11 @@
 0,graphics/front01.png
 0,graphics/ascii.png
 0,graphics/pl00b.png
+0,graphics/etama2.png
+0,graphics/etama6.png
+0,graphics/pl01c.png
+2,sound/se_pldead00.wav
 2,sound/Nuclear_Fusion.wav
+2,sound/se_tan02.wav
+2,sound/se_damage00.wav
+2,sound/se_graze.wav

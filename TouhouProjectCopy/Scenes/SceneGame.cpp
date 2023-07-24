@@ -11,6 +11,7 @@
 #include "Boss.h"
 #include "ShapeGo.h"
 #include "Bullet.h"
+#include "BulletEffect.h"
 
 SceneGame::SceneGame() : Scene(SceneId::Game)
 {
@@ -32,6 +33,11 @@ void SceneGame::Init()
 	};
 	poolHitBox.Init();
 
+	poolEffect.OnCreate = [this](BulletEffect* bulletEffect)
+	{
+		bulletEffect->SetPool(&poolEffect);
+	};
+	
 	{
 		SpriteGo* leftBar = (SpriteGo*)AddGo(new SpriteGo("graphics/mainView.png"));
 		leftBar->sprite.setTextureRect(sf::IntRect(0, 0, 31, 479));// -695 115 810 - 467 540 73
@@ -260,9 +266,16 @@ void SceneGame::Init()
 		graze->SetOrigin(Origins::MC);
 		graze->sortLayer = -2;
 
+		immortal = (SpriteGo*)AddGo(new SpriteGo("graphics/pl01c.png"));
+		immortal->SetOrigin(Origins::MC);
+		immortal->sortLayer = 3;
+		immortal->sprite.setScale(0.3f, 0.3f);
+		immortal->SetActive(false);
+
 		player = (Player*)AddGo(new Player());
 		player->SetGameView(gameViewSize);
 		player->sortLayer = 2;
+		player->SetImmortal(immortal);
 		player->SetLife(2);
 		player->SetHitBox(pHitbox);
 		player->SetGrazeBox(grazeBox);
@@ -302,6 +315,7 @@ void SceneGame::Init()
 			bullet->SetHitBoxPool(&poolHitBox);
 			bullet->SetBoss(boss);
 			bullet->SetPlayer(player);
+			bullet->SetEffectPool(&poolEffect);
 		};
 		poolBullet.Init();
 	}
@@ -316,6 +330,7 @@ void SceneGame::Release()
 {
 	poolBullet.Release();
 	poolHitBox.Release();
+	poolEffect.Release();
 
 	for (auto go : gameObjects)
 	{
@@ -325,11 +340,13 @@ void SceneGame::Release()
 
 void SceneGame::Enter()
 {
+	Scene::Enter();
+
 	auto size = FRAMEWORK.GetWindowSize();
 	worldView.setSize(size);
 	worldView.setCenter(0.f, 0.f);
 	uiView.setSize(size);
-	uiView.setCenter(size.x/2.f,size.y/2.f);
+	uiView.setCenter(size.x / 2.f, size.y / 2.f);
 
 	playing = true;
 	player->SetLife(2);
@@ -342,15 +359,20 @@ void SceneGame::Enter()
 	life1->SetActive(true);
 	life2->SetActive(true);
 
-	Scene::Enter();
+	gameMusic.setBuffer(*RESOURCE_MGR.GetSoundBuffer("sound/Nuclear_Fusion.wav"));
+	gameMusic.setLoop(true);
+	gameMusic.play();
+	gameMusic.setVolume(20);
 }
 
 void SceneGame::Exit()
 {
 	ClearPool(poolHitBox);
 	ClearPool(poolBullet);
+	ClearPool(poolEffect);
 	player->Reset();
 	boss->Reset();
+	gameMusic.stop();
 	Scene::Exit();
 }
 

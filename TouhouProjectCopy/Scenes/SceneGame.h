@@ -8,6 +8,7 @@ class Bullet;
 class HitboxGo;
 class Boss;
 class ShapeGo;
+class BulletEffect;
 
 class SceneGame : public Scene
 {
@@ -18,12 +19,16 @@ protected:
 	HitboxGo* bHitbox;
 	HitboxGo* grazeBox;
 	SpriteGo* graze;
+	SpriteGo* immortal;
 	SpriteGo* backGround;
+
+	sf::Sound gameMusic;
 
 	sf::FloatRect gameViewSize;
 
 	ObjectPool<Bullet> poolBullet;
 	ObjectPool<HitboxGo> poolHitBox;
+	ObjectPool<BulletEffect> poolEffect;
 
 	bool playing = false;
 

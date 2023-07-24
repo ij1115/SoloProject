@@ -28,12 +28,17 @@ void Player::Reset()
 {
 	SpriteGo::Reset();
 
+
 	SetPosition(gameView.left+gameView.width/2, gameView.top + gameView.height + 50.f);
 	dir = { 0.f,-1.f };
 	animation.Play("PlayerIdle");
 	SetOrigin(origin);
 	speed = 100.f;
 	timer = attackDelay;
+	pDead.setBuffer(*RESOURCE_MGR.GetSoundBuffer("sound/se_pldead00.wav"));
+	bFire.setBuffer(*RESOURCE_MGR.GetSoundBuffer("sound/se_graze.wav"));
+	bFire.setVolume(20);
+	Immortal->sprite.setTexture(*RESOURCE_MGR.GetTexture("graphics/pl01c.png"));
 	control = true;
 	hitDelay = true;
 	grazeMode = false;
@@ -65,11 +70,14 @@ void Player::Update(float dt)
 			if (hitDelay)
 			{
 				hitTimer -= dt;
+				Immortal->sprite.rotate(360 * dt);
 
 				if (hitTimer < 0.f)
 
 				{
 					hitDelay = false;
+					Immortal->SetActive(false);
+					pDead.stop();
 				}
 			}
 
@@ -93,6 +101,7 @@ void Player::Update(float dt)
 
 					//std::cout << "attack" << std::endl;
 					Fire();
+					bFire.play();
 				}
 
 				Move();
@@ -209,12 +218,13 @@ void Player::Fire()
 	}
 
 }
-
+                            
 void Player::FollwoPos()
 {
 	graze->SetPosition(position);
 	hitbox->SetPosition(position);
 	grazeBox->SetPosition(position);
+	Immortal->SetPosition(position);
 }
 float Player::GetHitBox()
 {
@@ -223,6 +233,19 @@ float Player::GetHitBox()
 float Player::GetGrazeBox()
 {
 	return this->grazeBox->GetRaidus();
+}
+
+void Player::PlayerDead()
+{
+	--life;
+
+	if (life>0)
+	{
+		Reset();
+		hitTimer = 5.f;
+		Immortal->SetActive(true);
+	}
+	pDead.play();
 }
 
 void Player::BulletPower_1()
