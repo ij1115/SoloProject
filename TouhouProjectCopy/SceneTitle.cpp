@@ -122,6 +122,13 @@ void SceneTitle::Enter()
 	worldView.setCenter(0.f, 0.f);
 	uiView.setSize(size);
 	uiView.setCenter(size.x / 2.f, size.y / 2.f);
+
+	for (auto go : gameObjects)
+	{
+		go->SetActive(true);
+	}
+
+	backGround->sprite.setTexture(*RESOURCE_MGR.GetTexture("graphics/title00a.png"));
 	se_Sound.setBuffer(*RESOURCE_MGR.GetSoundBuffer("sound/se_select00.wav"));
 	se_pickSound.setBuffer(*RESOURCE_MGR.GetSoundBuffer("sound/se_ok00.wav"));
 	titleMusic.setBuffer(*RESOURCE_MGR.GetSoundBuffer("sound/title.wav"));
@@ -129,6 +136,8 @@ void SceneTitle::Enter()
 	titleMusic.play();
 	titleMusic.setVolume(20);
 	change = false;
+	loading_kor->SetActive(false);
+	loading_Eng->SetActive(false);
 }
 
 void SceneTitle::Exit()
@@ -154,7 +163,7 @@ void SceneTitle::Update(float dt)
 	backGround->sprite.setColor(sf::Color(255, 255, 255, sf::Uint8(Utils::Lerp(0,255, timer / 0.5f))));
 	logo->sprite.setScale(1.8f, timer / 0.5f * 1.8f);
 
-	if (INPUT_MGR.GetKeyDown(sf::Keyboard::Up))
+	if (INPUT_MGR.GetKeyDown(sf::Keyboard::Up)|| INPUT_MGR.GetKeyDown(sf::Keyboard::Down))
 	{
 		se_Sound.play();
 		switch (select)
@@ -171,25 +180,7 @@ void SceneTitle::Update(float dt)
 			break;
 		}
 	}
-	else if (INPUT_MGR.GetKeyDown(sf::Keyboard::Down))
-	{
-		se_Sound.play();
-		switch (select)
-		{
-		case 0:
-			select = 1;
-			startButton->sprite.setTextureRect(buttonActive[0]);
-			exitButton->sprite.setTextureRect((buttonActive[3]));
-			break;
-		case 1:
-			select = 0;
-			startButton->sprite.setTextureRect(buttonActive[1]);
-			exitButton->sprite.setTextureRect((buttonActive[2]));
-			break;
-		}
-	}
-
-	if (INPUT_MGR.GetKeyDown(sf::Keyboard::Enter))
+	else if (INPUT_MGR.GetKeyDown(sf::Keyboard::Enter))
 	{
 		se_pickSound.play();
 		switch (select)

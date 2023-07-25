@@ -6,3 +6,6 @@
 3,Animations/BossLeftMove.csv
 3,Animations/BossRightMove.csv
 3,Animations/BossAction.csv
+3,Animations/Ending.csv
+2,sound/se_select00.wav
+2,sound/se_ok00.wav

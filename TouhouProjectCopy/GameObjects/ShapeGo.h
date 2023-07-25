@@ -23,5 +23,6 @@ public:
 	virtual void Update(float dt) override;
 
 	void SetSize(sf::Vector2f size) { shape.setSize(size); }
+	void SetColor(sf::Color color) { shape.setFillColor(color); }
 };
 

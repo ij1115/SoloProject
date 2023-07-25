@@ -629,7 +629,7 @@ void Boss::MovePatten3() // 중앙에서 원형으로 발사
 		break;
 	case 2:
 		PoseFalse();
-		SetdelayTime(3.f);
+		SetdelayTime(1.f);
 		TimeOut();
 		break;
 	case 3:
@@ -918,6 +918,8 @@ void Boss::MovePatten7()
 		break;
 	}
 }
+
+// 2 Phase
 void Boss::MovePatten8()
 {
 	switch (count)

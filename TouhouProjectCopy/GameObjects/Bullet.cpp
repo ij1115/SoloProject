@@ -116,7 +116,7 @@ void Bullet::Update(float dt)
 			hitboxPool->Return(this->hitbox);
 			pool->Return(this);
 			player->PlusScore(1);
-			boss->BossDamage(9999);
+			boss->BossDamage(5);
 		}
 		else if (user == User::Player && BossCollider() && type == Types::Type_Two)
 		{

@@ -110,7 +110,6 @@ public:
 	void BulletPatten3();
 	void BulletPatten4();
 	void BulletPatten5();
-//Ãæµ¹  {}
 };
 
 

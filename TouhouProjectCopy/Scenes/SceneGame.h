@@ -1,7 +1,7 @@
 #pragma once
 #include "Scene.h"
 #include "ObjectPool.h"
-
+#include "AnimationController.h"
 class SpriteGo;
 class Player;
 class Bullet;
@@ -10,9 +10,12 @@ class Boss;
 class ShapeGo;
 class BulletEffect;
 
+
 class SceneGame : public Scene
 {
 protected:
+	AnimationController endingAni;
+	SpriteGo* ending;
 	Player* player;
 	Boss* boss;
 	HitboxGo* pHitbox;
@@ -24,6 +27,9 @@ protected:
 	sf::Vector2f backGroundScale = { 3.f,3.f };
 
 	sf::Sound gameMusic;
+	sf::Sound se_Sound;
+	sf::Sound se_pickSound;
+	sf::Sound se_pause;
 
 	sf::FloatRect gameViewSize;
 
@@ -34,6 +40,9 @@ protected:
 	bool playing = false;
 	bool phaseChange = false;
 	bool scaleChange = false;
+	bool pause = false;
+	bool realyYN = false;
+	bool endingScene = false;
 
 	float timer = 0.f;
 	float changeClearTime = 1.0f;
@@ -76,6 +85,20 @@ protected:
 		SpriteGo* power3;
 		SpriteGo* power4;
 		SpriteGo* power5;
+
+
+		int pauseMenuSelect = 0;
+		int realySelect = 0;
+		ShapeGo* pauseBackGround;
+		SpriteGo* pauseBar;
+		SpriteGo* pauseMenu;
+		SpriteGo* returnToGame;
+		SpriteGo* returnToTitle;
+		SpriteGo* giveUpToReplay;
+		SpriteGo* realyBar;
+		SpriteGo* realy;
+		SpriteGo* yes;
+		SpriteGo* no;
 	
 
 public:
@@ -94,6 +117,10 @@ public:
 	void GetBullet(Bullet*& bullet);
 	template<class T>
 	void ClearPool(ObjectPool<T>& pool);
+
+	void Pause(bool pause);
+
+	void Realy(bool realyYN);
 
 	void TimerFont();
 	void PowerFont();
