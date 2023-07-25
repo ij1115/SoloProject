@@ -16,6 +16,7 @@ protected:
 	sf::Vector2f dir;
 
 	bool playing;
+	bool phaseChange;
 	bool control = true;
 	bool hitDelay = true;
 	bool grazeMode = false;
@@ -73,6 +74,8 @@ public:
 	void SetLife(int l) { life = l; }
 	void SetPlaying(bool play) { playing = play; }
 	bool GetPlaying() { return playing; }
+	void SetChangePhase(bool phase) { phaseChange = phase; }
+	bool GetChangePhase() { return phaseChange; }
 	bool GrazeMode() { return grazeMode; }
 	void SetScore(int i) { score = i; }
 	void PlusScore(int i) { score += i; }
@@ -85,5 +88,6 @@ public:
 	void BulletPower_2(sf::Vector2f pos);
 	void BulletPower_3();
 	void BulletPower_4();
+	void Revive();
 };
 

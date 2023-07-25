@@ -36,6 +36,8 @@ protected:
 	bool bossPrivatePose = false;
 	bool delay = false;
 	bool action = false;
+	bool phase = false;
+
 	int actionNum = 0;
 	//시험용
 	int count;
@@ -45,10 +47,12 @@ protected:
 	sf::FloatRect gameView;
 	sf::Vector2f center;
 	sf::Sound hit;
+	sf::Sound attack;
 
 	Bullet* bullet;
 	Player* player;
 	HitboxGo* hitbox;
+	SpriteGo* phaseEffect;
 
 	ObjectPool<HitboxGo>* pool = nullptr;
 public:
@@ -71,22 +75,37 @@ public:
 		center.y = gameView.top + gameView.height / 2;
 	}
 
+	void SetAction(bool select) { action = select; }
 	void SetTargetPos();
 	void SetPlayer(Player* player);
 	void SetHitBox(HitboxGo* hitbox) { this->hitbox = hitbox; }
-	void HitBoxPos() { hitbox->SetPosition(position); }
+	void SetPhaseEffect(SpriteGo* effect) { this->phaseEffect = effect; }
+	void FollowPos() {
+		hitbox->SetPosition(position);
+		phaseEffect->SetPosition(position);
+	}
 	void Fire();
 	void Fire2();
 	void Fire3();
 	void Fire4(int c);
+	void Fire5(int c);
+	void Fire6(int c);
+	void Fire7();
+	void Fire8();
 	void Move();
 	sf::Vector2f BezierMove(const sf::Vector2f& pos0, const sf::Vector2f& pos1, const sf::Vector2f& pos2, float moveT);
 
-	void Patten1();
-	void Patten2();
-	void Patten3();
-	void Patten4();
-	void Patten5();
+	void MovePatten1();
+	void MovePatten2();
+	void MovePatten3();
+	void MovePatten4();
+	void MovePatten5();
+	void MovePatten6();
+	void MovePatten7();
+	void MovePatten8();
+	void MovePatten9();
+	void MovePatten10();
+
 
 	//패턴 설정 값
 	void SetStartMovePosX(float x) { this->startMovePos.x = x; };
@@ -121,14 +140,18 @@ public:
 	}
 	void CountUp() { this->count++; }
 	
-
 	float GetHitBox();
 
 	void BossDamage(float damage) {
 		hit.play();
 		if (hp > 0)hp -= damage;
-		else if (hp < 0)hp = 0.f;
+		if (hp <= 0)hp = 0.f;
 	}
+	void SetPhase(bool change) { phase = change; }
+	bool GetPhase() { return phase; }
 	float GetBossHp() { return hp; }
 	float GetBossMaxHp() { return maxHp; }
+	void ResetHP() { hp = maxHp; }
+	void SetHP(float hp) { this->hp = hp; }
+	void SetPhaseEffect(bool control) { phaseEffect->SetActive(control); }
 };

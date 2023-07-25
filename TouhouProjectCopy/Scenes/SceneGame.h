@@ -21,6 +21,7 @@ protected:
 	SpriteGo* graze;
 	SpriteGo* immortal;
 	SpriteGo* backGround;
+	sf::Vector2f backGroundScale = { 3.f,3.f };
 
 	sf::Sound gameMusic;
 
@@ -31,8 +32,12 @@ protected:
 	ObjectPool<BulletEffect> poolEffect;
 
 	bool playing = false;
+	bool phaseChange = false;
+	bool scaleChange = false;
 
 	float timer = 0.f;
+	float changeClearTime = 1.0f;
+	float changeTimer = 0.f;
 	int score;
 
 	int num1;

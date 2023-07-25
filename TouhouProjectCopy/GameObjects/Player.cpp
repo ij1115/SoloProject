@@ -41,10 +41,14 @@ void Player::Reset()
 	Immortal->sprite.setTexture(*RESOURCE_MGR.GetTexture("graphics/pl01c.png"));
 	control = true;
 	hitDelay = true;
+	playing = true;
 	grazeMode = false;
+	phaseChange = false;
+	life = 2;
+	score = 0.f;
+	power = 0.f;
 	graze->sortLayer = -2;
 	hitbox->sortLayer = -2;
-
 }
 
 void Player::Release()
@@ -95,7 +99,7 @@ void Player::Update(float dt)
 
 				this->timer -= dt;
 
-				if (this->timer < 0.f && INPUT_MGR.GetKey(sf::Keyboard::Z))
+				if (this->timer < 0.f && INPUT_MGR.GetKey(sf::Keyboard::Z)&&!phaseChange)
 				{
 					this->timer = attackDelay;
 
@@ -241,7 +245,12 @@ void Player::PlayerDead()
 
 	if (life>0)
 	{
-		Reset();
+		power -= 1.0f;
+		if (power <= 0.f)
+		{
+			power = 0.f;
+		}
+		Revive();
 		hitTimer = 5.f;
 		Immortal->SetActive(true);
 	}
@@ -325,4 +334,17 @@ void Player::BulletPower_4()
 		bullet->SetSpeed(1000.f);
 		sceneGame->AddGo(bullet);
 	}
+}
+
+void Player::Revive()
+{
+	SetPosition(gameView.left + gameView.width / 2, gameView.top + gameView.height + 50.f);
+	dir = { 0.f,-1.f };
+	speed = 100.f;
+	timer = attackDelay;
+	control = true;
+	hitDelay = true;
+	grazeMode = false;
+	graze->sortLayer = -2;
+	hitbox->sortLayer = -2;
 }

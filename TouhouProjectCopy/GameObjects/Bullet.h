@@ -16,8 +16,8 @@ public:
 	};
 	enum class Types
 	{
-		Shape,
-		Line,
+		Type_One,
+		Type_Two,
 	};
 protected:
 	bool playing;
@@ -65,6 +65,7 @@ public:
 	virtual void Reset() override;
 
 	virtual void Update(float dt) override;
+	virtual void Draw(sf::RenderWindow& window) override;
 
 	void SetGameView(sf::FloatRect size) { gameView = size; }
 	void GetPlaying(bool playering) { this->playing = &playing; }
@@ -108,6 +109,8 @@ public:
 	void BulletPatten2();
 	void BulletPatten3();
 	void BulletPatten4();
+	void BulletPatten5();
 //Ãæµ¹  {}
 };
+
 

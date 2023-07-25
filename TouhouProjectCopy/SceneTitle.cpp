@@ -17,7 +17,6 @@ void SceneTitle::Init()
 	Release();
 	auto size = FRAMEWORK.GetWindowSize();
 
-
 	loading_kor = (SpriteGo*)AddGo(new SpriteGo("graphics/loading.png"));
 	loading_kor->sprite.setTextureRect(sf::IntRect(8, 3, 111, 25));
 	loading_kor->sprite.setScale(1.5f, 1.5f);
@@ -196,10 +195,12 @@ void SceneTitle::Update(float dt)
 		switch (select)
 		{
 		case 0:
+			backGround->sprite.setTexture(*RESOURCE_MGR.GetTexture("graphics/TitleBackground.png"));
 			for (auto go : gameObjects)
 			{
 				go->SetActive(false);
 			}
+			backGround->SetActive(true);
 			loading_kor->SetActive(true);
 			loading_Eng->SetActive(true);
 

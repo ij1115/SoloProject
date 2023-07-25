@@ -283,7 +283,7 @@ void SceneGame::Init()
 
 		backGround = (SpriteGo*)AddGo(new SpriteGo("graphics/stage05a.png"));
 		backGround->sprite.setTextureRect(sf::IntRect(0, 0, 256, 256));
-		backGround->SetPosition(-200.f, 0.f);
+		backGround->SetPosition(gameViewSize.left+(gameViewSize.width/2), 0.f);
 		backGround->sprite.setScale(7.f, 7.f);
 		backGround->SetOrigin(Origins::MC);
 		backGround->sortLayer = -1;
@@ -297,11 +297,20 @@ void SceneGame::Init()
 		bHitbox->sortLayer = -2;
 		bHitbox->SetType(1);
 
+		SpriteGo* phaseEffect = (SpriteGo*)AddGo(new SpriteGo("graphics/etama2.png"));
+		phaseEffect->sprite.setTextureRect(sf::IntRect(128, 79, 128, 128));
+		phaseEffect->SetOrigin(Origins::MC);
+		phaseEffect->sortLayer = 1;
+		phaseEffect->sortOrder = -1;
+		phaseEffect->SetActive(false);
+
 		boss = (Boss*)AddGo(new Boss());
 		boss->SetGameView(gameViewSize);
 		boss->SetPlayer(player);
 		boss->SetHitBox(bHitbox);
+		boss->SetPhaseEffect(phaseEffect);
 		boss->sortLayer = 1;
+
 
 		bossHp = (ShapeGo*)AddGo(new ShapeGo());
 		bossHp->SetPosition(41.f, 55.f);
@@ -349,17 +358,26 @@ void SceneGame::Enter()
 	uiView.setCenter(size.x / 2.f, size.y / 2.f);
 
 	playing = true;
-	player->SetLife(2);
-	player->SetPlaying(playing);
-	bossClear->SetActive(false);
-	clearFailed->SetActive(false);
+	phaseChange = false;
+	scaleChange = false;
 	timer = 90.00f;
-	player->SetScore(0);
-	player->SetPower(0.f);
 	life1->SetActive(true);
 	life2->SetActive(true);
 
-	gameMusic.setBuffer(*RESOURCE_MGR.GetSoundBuffer("sound/Nuclear_Fusion.wav"));
+	player->Reset();
+	boss->Reset();
+
+	bossClear->SetActive(false);
+	clearFailed->SetActive(false);
+
+	backGround->textureId = ("graphics/stage05a.png");
+	backGround->sprite.setTexture(*RESOURCE_MGR.GetTexture("graphics/stage05a.png"));
+	backGround->sprite.setTextureRect(sf::IntRect(0, 0, 256, 256));
+	backGround->SetPosition(gameViewSize.left + (gameViewSize.width / 2), 0.f);
+	backGround->sprite.setScale(7.f, 7.f);
+	backGround->SetOrigin(Origins::MC);
+
+	gameMusic.setBuffer(*RESOURCE_MGR.GetSoundBuffer("sound/mantle.wav"));
 	gameMusic.setLoop(true);
 	gameMusic.play();
 	gameMusic.setVolume(20);
@@ -391,34 +409,123 @@ void SceneGame::Update(float dt)
 
 	if (playing)
 	{
-		timer -= dt;
-
-		backGround->sprite.rotate(20 * dt);
-		graze->sprite.rotate(720 * dt);
-
-		if (player->GetLife() < 1)
+		if(!phaseChange)
 		{
-			playing = false;
-			player->SetPlaying(playing);
-			clearFailed->SetActive(true);
-		}
-		else if (boss->GetBossHp() == 0)
-		{
-			bossClear->SetActive(true);
-			playing = false;
-			boss->SetActive(false);
-			player->SetPlaying(playing);
-		}
-		else if (timer < 0.f)
-		{
-			playing = false;
-			player->SetPlaying(playing);
-			clearFailed->SetActive(true);
-		}
+			timer -= dt;
 
-		TimerFont();
-		ScoreFont();
-		PowerFont();
+			backGround->sprite.rotate(20 * dt);
+			graze->sprite.rotate(720 * dt);
+
+			if (boss->GetBossHp() <= 0 && !boss->GetPhase())
+			{
+				phaseChange = true;
+				changeTimer = 0.f;
+				if (!poolBullet.GetUseList().empty())
+				{
+					for (auto obj : poolBullet.GetUseList())
+					{
+						RemoveGo(obj);
+					}
+				}
+				if (!poolHitBox.GetUseList().empty())
+				{
+					for (auto obj : poolHitBox.GetUseList())
+					{
+						RemoveGo(obj);
+					}
+				}
+				if (!poolEffect.GetUseList().empty())
+				{
+					for (auto obj : poolEffect.GetUseList())
+					{
+						RemoveGo(obj);
+					}
+				}
+
+				player->SetChangePhase(true);
+				boss->SetPhase(true);
+				boss->SetSpeed(0.f);
+				boss->SetDirX(0.f);
+				pHitbox->SetActive(false);
+				bHitbox->SetActive(false);
+				graze->SetActive(false);
+				grazeBox->SetActive(false);
+			}
+			else if (boss->GetBossHp() <= 0 && boss->GetPhase())
+			{
+				bossClear->SetActive(true);
+				playing = false;
+				boss->SetActive(false);
+				boss->SetPhaseEffect(false);
+				boss->SetAction(true);
+				player->SetPlaying(playing);
+			}
+			if (player->GetLife() < 1)
+			{
+				playing = false;
+				player->SetPlaying(playing);
+				clearFailed->SetActive(true);
+			}
+			else if (timer < 0.f)
+			{
+				playing = false;
+				player->SetPlaying(playing);
+				clearFailed->SetActive(true);
+			}
+
+			TimerFont();
+			ScoreFont();
+			PowerFont();
+		}
+		else if (phaseChange)
+		{
+			timer = 90.f;
+
+			changeTimer += dt;
+			if (!scaleChange)
+			{
+				backGround->sprite.setColor(sf::Color(255, 255, 255, (1.f - (changeTimer / changeClearTime)) * 255));
+			}
+			else if (scaleChange)
+			{
+				boss->SetHP(boss->GetBossHp() + (changeTimer / changeClearTime) *
+					(boss->GetBossMaxHp() - boss->GetBossHp()));
+				backGround->sprite.setScale(backGround->sprite.getScale() +
+					(changeTimer / changeClearTime) * 
+					(backGroundScale - backGround->sprite.getScale()));
+			}
+			if (changeClearTime <=changeTimer)
+			{
+				if (!scaleChange)
+				{
+					scaleChange = true;
+					backGround->textureId = ("graphics/stage06c.png");
+					backGround->sprite.setTexture(*RESOURCE_MGR.GetTexture("graphics/stage06c.png"));
+					backGround->sprite.setColor(sf::Color(255, 255, 255, 255));
+					backGround->sprite.setTextureRect(sf::IntRect(0, 0, 512, 512));
+					backGround->sprite.setScale(7.f, 7.f);
+					backGround->SetOrigin(Origins::MC);
+
+					pHitbox->SetActive(true);
+					bHitbox->SetActive(true);
+					graze->SetActive(true);
+					grazeBox->SetActive(true);
+					boss->SetPhaseEffect(true);
+					changeTimer = 0.f;
+				}
+				else if (scaleChange)
+				{
+					gameMusic.setBuffer(*RESOURCE_MGR.GetSoundBuffer("sound/Nuclear_Fusion.wav"));
+					gameMusic.setLoop(true);
+					gameMusic.play();
+					gameMusic.setVolume(20);
+
+					phaseChange = false;
+					player->SetChangePhase(false);
+					boss->SetAction(false);
+				}
+			}
+		}
 	}
 	else if (!playing)
 	{
@@ -429,7 +536,6 @@ void SceneGame::Update(float dt)
 	}
 
 	bossHp->SetSize({ boss->GetBossHp() * (800.f /boss->GetBossMaxHp()) ,3.f });
-
 
 	if (INPUT_MGR.GetKeyDown(sf::Keyboard::Escape))
 	{

@@ -4,7 +4,7 @@
 0,graphics/Boss_Utsuho_Reiuji.png
 0,graphics/mainView.png
 0,graphics/stage05a.png
-0,graphics/stage05b.png
+0,graphics/stage06c.png
 0,graphics/ename.png
 0,graphics/front01.png
 0,graphics/ascii.png
@@ -13,6 +13,7 @@
 0,graphics/etama6.png
 0,graphics/pl01c.png
 2,sound/se_pldead00.wav
+2,sound/mantle.wav
 2,sound/Nuclear_Fusion.wav
 2,sound/se_tan02.wav
 2,sound/se_damage00.wav
