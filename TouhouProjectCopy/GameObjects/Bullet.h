@@ -65,7 +65,6 @@ public:
 	virtual void Reset() override;
 
 	virtual void Update(float dt) override;
-	virtual void Draw(sf::RenderWindow& window) override;
 
 	void SetGameView(sf::FloatRect size) { gameView = size; }
 	void GetPlaying(bool playering) { this->playing = &playing; }

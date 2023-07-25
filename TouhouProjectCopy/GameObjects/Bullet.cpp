@@ -116,7 +116,7 @@ void Bullet::Update(float dt)
 			hitboxPool->Return(this->hitbox);
 			pool->Return(this);
 			player->PlusScore(1);
-			boss->BossDamage(5);
+			boss->BossDamage(7);
 		}
 		else if (user == User::Player && BossCollider() && type == Types::Type_Two)
 		{
@@ -134,7 +134,7 @@ void Bullet::Update(float dt)
 			hitboxPool->Return(this->hitbox);
 			pool->Return(this);
 			player->PlusScore(1);
-			boss->BossDamage(3);
+			boss->BossDamage(4);
 		}
 		else if (user == User::Enemy && PlayerCollider() && !player->GetHitDelay())
 		{
@@ -165,14 +165,6 @@ void Bullet::Update(float dt)
 
 		Destroy();
 	}
-}
-
-void Bullet::Draw(sf::RenderWindow& window)
-{
-	if (user == User::Enemy)
-		window.draw(sprite, sf::BlendAdd);
-	else
-		window.draw(sprite);
 }
 
 void Bullet::SetPool(ObjectPool<Bullet>* bulletPool)

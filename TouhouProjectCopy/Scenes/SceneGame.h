@@ -42,6 +42,7 @@ protected:
 	bool scaleChange = false;
 	bool pause = false;
 	bool realyYN = false;
+	bool clear = false;
 	bool endingScene = false;
 
 	float timer = 0.f;

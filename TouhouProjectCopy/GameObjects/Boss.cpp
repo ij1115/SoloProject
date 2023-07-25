@@ -64,8 +64,7 @@ void Boss::Update(float dt)
 		pDelay -= dt;
 
 		FollowPos();
-		//std::cout << delayTime << std::endl;
-		//std::cout << hp << std::endl;
+
 		if (phaseEffect->GetActive())
 		{
 			phaseEffect->sprite.rotate(360 * dt);

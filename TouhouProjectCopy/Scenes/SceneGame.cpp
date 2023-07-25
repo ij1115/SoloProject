@@ -450,7 +450,8 @@ void SceneGame::Enter()
 	pause = false;
 	realyYN = false;
 	endingScene = false;
-
+	clear = false;
+	endingAni.Stop();
 	pauseMenuSelect = 0;
 	realySelect = 0;
 
@@ -505,183 +506,7 @@ void SceneGame::Exit()
 
 void SceneGame::Update(float dt)
 {
-	Pause(pause);
-	Realy(realyYN);
-
-	if (INPUT_MGR.GetKeyDown(sf::Keyboard::Escape)&&!realyYN)
-	{
-		if (!pause)
-		{
-			se_pause.play();
-		}
-		pause = !pause;
-	}
-
-	if (pause)
-	{
-		if (!realyYN)
-		{
-			switch (pauseMenuSelect)
-			{
-			case 0:
-				returnToGame->sprite.setColor(sf::Color(255, 255, 255, 255));
-				returnToTitle->sprite.setColor(sf::Color(255, 255, 255, 150));
-				giveUpToReplay->sprite.setColor(sf::Color(255, 255, 255, 150));
-				if (INPUT_MGR.GetKeyDown(sf::Keyboard::Up))
-				{
-					se_Sound.play();
-					pauseMenuSelect = 2;
-				}
-				else if (INPUT_MGR.GetKeyDown(sf::Keyboard::Down))
-				{
-					se_Sound.play();
-					pauseMenuSelect = 1;
-				}
-				else if (INPUT_MGR.GetKeyDown(sf::Keyboard::Enter))
-				{
-					se_pickSound.play();
-					pause = !pause;
-				}
-				break;
-			case 1:
-				returnToGame->sprite.setColor(sf::Color(255, 255, 255, 150));
-				returnToTitle->sprite.setColor(sf::Color(255, 255, 255, 255));
-				giveUpToReplay->sprite.setColor(sf::Color(255, 255, 255, 150));
-				if (INPUT_MGR.GetKeyDown(sf::Keyboard::Up))
-				{
-					se_Sound.play();
-					pauseMenuSelect = 0;
-				}
-				else if (INPUT_MGR.GetKeyDown(sf::Keyboard::Down))
-				{
-					se_Sound.play();
-					pauseMenuSelect = 2;
-				}
-				else if (INPUT_MGR.GetKeyDown(sf::Keyboard::Enter))
-				{
-					se_pickSound.play();
-					realyYN = !realyYN;
-				}
-				break;
-			case 2:
-				returnToGame->sprite.setColor(sf::Color(255, 255, 255, 150));
-				returnToTitle->sprite.setColor(sf::Color(255, 255, 255, 150));
-				giveUpToReplay->sprite.setColor(sf::Color(255, 255, 255, 255));
-				if (INPUT_MGR.GetKeyDown(sf::Keyboard::Up))
-				{
-					se_Sound.play();
-					pauseMenuSelect = 1;
-				}
-				else if (INPUT_MGR.GetKeyDown(sf::Keyboard::Down))
-				{
-					se_Sound.play();
-					pauseMenuSelect = 0;
-				}
-				else if (INPUT_MGR.GetKeyDown(sf::Keyboard::Enter))
-				{
-					se_pickSound.play();
-					realyYN = !realyYN;
-				}
-				break;
-			}
-		}
-		else if (realyYN)
-		{
-			switch (pauseMenuSelect)
-			{
-			case 1:
-				returnToGame->sprite.setColor(sf::Color(255, 255, 255, 150));
-				returnToTitle->sprite.setColor(sf::Color(255, 255, 255, 220));
-				giveUpToReplay->sprite.setColor(sf::Color(255, 255, 255, 150));
-				if (INPUT_MGR.GetKeyDown(sf::Keyboard::Up)||INPUT_MGR.GetKeyDown(sf::Keyboard::Down))
-				{
-					se_Sound.play();
-					switch (realySelect)
-					{
-					case 0:
-						realySelect = 1;
-						yes->sprite.setColor(sf::Color(255, 255, 255, 150));
-						no->sprite.setColor(sf::Color(255, 255, 255, 255));
-
-						break;
-					case 1:
-						realySelect = 0;
-						yes->sprite.setColor(sf::Color(255, 255, 255, 255));
-						no->sprite.setColor(sf::Color(255, 255, 255, 150));
-						break;
-					}
-				}
-				else if (INPUT_MGR.GetKeyDown(sf::Keyboard::Enter))
-				{
-					se_pickSound.play();
-					switch (realySelect)
-					{
-					case 0:
-						realyYN = !realyYN;
-						pause = !pause;
-						SCENE_MGR.ChangeScene(SceneId::Title);
-						break;
-					case 1:
-						realyYN=!realyYN;
-						realySelect = 0;
-						break;
-					}
-				}
-				else if (INPUT_MGR.GetKeyDown(sf::Keyboard::Escape))
-				{
-					se_pickSound.play();
-					realyYN = !realyYN;
-					realySelect = 0;
-				}
-				break;
-			case 2:
-				returnToGame->sprite.setColor(sf::Color(255, 255, 255, 150));
-				returnToTitle->sprite.setColor(sf::Color(255, 255, 255, 150));
-				giveUpToReplay->sprite.setColor(sf::Color(255, 255, 255, 220));
-				if (INPUT_MGR.GetKeyDown(sf::Keyboard::Up) || INPUT_MGR.GetKeyDown(sf::Keyboard::Down))
-				{
-					se_Sound.play();
-					switch (realySelect)
-					{
-					case 0:
-						realySelect = 1;
-						yes->sprite.setColor(sf::Color(255, 255, 255, 150));
-						no->sprite.setColor(sf::Color(255, 255, 255, 255));
-						break;
-					case 1:
-						realySelect = 0;
-						yes->sprite.setColor(sf::Color(255, 255, 255, 255));
-						no->sprite.setColor(sf::Color(255, 255, 255, 150));
-						break;
-					}
-				}
-				else if (INPUT_MGR.GetKeyDown(sf::Keyboard::Enter))
-				{
-					se_pickSound.play();
-					switch (realySelect)
-					{
-					case 0:
-						realyYN = !realyYN;
-						pause = !pause;
-						SCENE_MGR.ChangeScene(SceneId::Game);
-						break;
-					case 1:
-						realyYN = !realyYN;
-						realySelect = 0;
-						break;
-					}
-				}
-				else if (INPUT_MGR.GetKeyDown(sf::Keyboard::Escape))
-				{
-					se_pickSound.play();
-					realySelect = 0;
-					realyYN = !realyYN;
-				}
-				break;
-			}
-		}
-		dt = 0;
-	}
+	
 
 
 	if (player->GetLife() == 1 && life2->GetActive())
@@ -697,8 +522,186 @@ void SceneGame::Update(float dt)
 
 	Scene::Update(dt);
 	endingAni.Update(dt);
+
 	if (playing)
 	{
+		Pause(pause);
+		Realy(realyYN);
+
+		if (INPUT_MGR.GetKeyDown(sf::Keyboard::Escape) && !realyYN)
+		{
+			if (!pause)
+			{
+				se_pause.play();
+			}
+			pause = !pause;
+		}
+
+		if (pause)
+		{
+			if (!realyYN)
+			{
+				switch (pauseMenuSelect)
+				{
+				case 0:
+					returnToGame->sprite.setColor(sf::Color(255, 255, 255, 255));
+					returnToTitle->sprite.setColor(sf::Color(255, 255, 255, 150));
+					giveUpToReplay->sprite.setColor(sf::Color(255, 255, 255, 150));
+					if (INPUT_MGR.GetKeyDown(sf::Keyboard::Up))
+					{
+						se_Sound.play();
+						pauseMenuSelect = 2;
+					}
+					else if (INPUT_MGR.GetKeyDown(sf::Keyboard::Down))
+					{
+						se_Sound.play();
+						pauseMenuSelect = 1;
+					}
+					else if (INPUT_MGR.GetKeyDown(sf::Keyboard::Enter))
+					{
+						se_pickSound.play();
+						pause = !pause;
+					}
+					break;
+				case 1:
+					returnToGame->sprite.setColor(sf::Color(255, 255, 255, 150));
+					returnToTitle->sprite.setColor(sf::Color(255, 255, 255, 255));
+					giveUpToReplay->sprite.setColor(sf::Color(255, 255, 255, 150));
+					if (INPUT_MGR.GetKeyDown(sf::Keyboard::Up))
+					{
+						se_Sound.play();
+						pauseMenuSelect = 0;
+					}
+					else if (INPUT_MGR.GetKeyDown(sf::Keyboard::Down))
+					{
+						se_Sound.play();
+						pauseMenuSelect = 2;
+					}
+					else if (INPUT_MGR.GetKeyDown(sf::Keyboard::Enter))
+					{
+						se_pickSound.play();
+						realyYN = !realyYN;
+					}
+					break;
+				case 2:
+					returnToGame->sprite.setColor(sf::Color(255, 255, 255, 150));
+					returnToTitle->sprite.setColor(sf::Color(255, 255, 255, 150));
+					giveUpToReplay->sprite.setColor(sf::Color(255, 255, 255, 255));
+					if (INPUT_MGR.GetKeyDown(sf::Keyboard::Up))
+					{
+						se_Sound.play();
+						pauseMenuSelect = 1;
+					}
+					else if (INPUT_MGR.GetKeyDown(sf::Keyboard::Down))
+					{
+						se_Sound.play();
+						pauseMenuSelect = 0;
+					}
+					else if (INPUT_MGR.GetKeyDown(sf::Keyboard::Enter))
+					{
+						se_pickSound.play();
+						realyYN = !realyYN;
+					}
+					break;
+				}
+			}
+			else if (realyYN)
+			{
+				switch (pauseMenuSelect)
+				{
+				case 1:
+					returnToGame->sprite.setColor(sf::Color(255, 255, 255, 150));
+					returnToTitle->sprite.setColor(sf::Color(255, 255, 255, 220));
+					giveUpToReplay->sprite.setColor(sf::Color(255, 255, 255, 150));
+					if (INPUT_MGR.GetKeyDown(sf::Keyboard::Up) || INPUT_MGR.GetKeyDown(sf::Keyboard::Down))
+					{
+						se_Sound.play();
+						switch (realySelect)
+						{
+						case 0:
+							realySelect = 1;
+							yes->sprite.setColor(sf::Color(255, 255, 255, 150));
+							no->sprite.setColor(sf::Color(255, 255, 255, 255));
+
+							break;
+						case 1:
+							realySelect = 0;
+							yes->sprite.setColor(sf::Color(255, 255, 255, 255));
+							no->sprite.setColor(sf::Color(255, 255, 255, 150));
+							break;
+						}
+					}
+					else if (INPUT_MGR.GetKeyDown(sf::Keyboard::Enter))
+					{
+						se_pickSound.play();
+						switch (realySelect)
+						{
+						case 0:
+							realyYN = !realyYN;
+							pause = !pause;
+							SCENE_MGR.ChangeScene(SceneId::Title);
+							break;
+						case 1:
+							realyYN = !realyYN;
+							realySelect = 0;
+							break;
+						}
+					}
+					else if (INPUT_MGR.GetKeyDown(sf::Keyboard::Escape))
+					{
+						se_pickSound.play();
+						realyYN = !realyYN;
+						realySelect = 0;
+					}
+					break;
+				case 2:
+					returnToGame->sprite.setColor(sf::Color(255, 255, 255, 150));
+					returnToTitle->sprite.setColor(sf::Color(255, 255, 255, 150));
+					giveUpToReplay->sprite.setColor(sf::Color(255, 255, 255, 220));
+					if (INPUT_MGR.GetKeyDown(sf::Keyboard::Up) || INPUT_MGR.GetKeyDown(sf::Keyboard::Down))
+					{
+						se_Sound.play();
+						switch (realySelect)
+						{
+						case 0:
+							realySelect = 1;
+							yes->sprite.setColor(sf::Color(255, 255, 255, 150));
+							no->sprite.setColor(sf::Color(255, 255, 255, 255));
+							break;
+						case 1:
+							realySelect = 0;
+							yes->sprite.setColor(sf::Color(255, 255, 255, 255));
+							no->sprite.setColor(sf::Color(255, 255, 255, 150));
+							break;
+						}
+					}
+					else if (INPUT_MGR.GetKeyDown(sf::Keyboard::Enter))
+					{
+						se_pickSound.play();
+						switch (realySelect)
+						{
+						case 0:
+							realyYN = !realyYN;
+							pause = !pause;
+							SCENE_MGR.ChangeScene(SceneId::Game);
+							break;
+						case 1:
+							realyYN = !realyYN;
+							realySelect = 0;
+							break;
+						}
+					}
+					else if (INPUT_MGR.GetKeyDown(sf::Keyboard::Escape))
+					{
+						se_pickSound.play();
+						realySelect = 0;
+						realyYN = !realyYN;
+					}
+					break;
+				}
+			}
+			dt = 0;
+		}
 		if(!phaseChange)
 		{
 			timer -= dt;
@@ -748,6 +751,7 @@ void SceneGame::Update(float dt)
 				boss->SetActive(false);
 				boss->SetPhaseEffect(false);
 				boss->SetAction(true);
+				clear = true;
 				player->SetPlaying(playing);
 			}
 			if (player->GetLife() < 1)
@@ -819,7 +823,7 @@ void SceneGame::Update(float dt)
 	}
 	else if (!playing)
 	{
-		if (INPUT_MGR.GetKeyDown(sf::Keyboard::Enter)&&boss->GetPhase()&&!endingScene)
+		if (INPUT_MGR.GetKeyDown(sf::Keyboard::Enter)&&boss->GetPhase()&&!endingScene&&clear)
 		{
 			gameMusic.setBuffer(*RESOURCE_MGR.GetSoundBuffer("sound/comeBackHome.wav"));
 			gameMusic.setLoop(true);
@@ -828,11 +832,11 @@ void SceneGame::Update(float dt)
 			endingAni.Play("Ending");
 			endingScene = true;
 		}
-		else if (INPUT_MGR.GetKeyDown(sf::Keyboard::Enter) && boss->GetPhase() && endingScene)
+		else if (INPUT_MGR.GetKeyDown(sf::Keyboard::Enter) && boss->GetPhase() && endingScene && clear)
 		{
 			SCENE_MGR.ChangeScene(SceneId::Title);
 		}
-		else if (INPUT_MGR.GetKeyDown(sf::Keyboard::Enter) && !boss->GetPhase())
+		else if (INPUT_MGR.GetKeyDown(sf::Keyboard::Enter) && !clear)
 		{
 			SCENE_MGR.ChangeScene(SceneId::Title);
 		}
