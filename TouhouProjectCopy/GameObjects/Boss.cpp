@@ -6,9 +6,8 @@
 #include "scene.h"
 #include "SceneGame.h"
 #include "SceneMgr.h"
-#include "Player.h"
-#include "Bullet.h"
 
+#include "Bullet.h"
 
 void Boss::Init()
 {
@@ -32,13 +31,14 @@ void Boss::Reset()
 	hit.setVolume(25);
 	attack.setBuffer(*RESOURCE_MGR.GetSoundBuffer("sound/se_tan02.wav"));
 	attack.setVolume(15);
+
 	SetPosition(gameView.left + gameView.width / 2, gameView.top -100.f);
 	bossAnimation.Play("BossIdle");
 	SetOrigin(origin);
 	SetActive(true);
 	action = false;
 	speed = 0.0f;
-	timer = 0.f;
+	bezierTimer = 0.f;
 	dir = { 0.f,0.f };
 	count = 0;
 	ResetHP();
@@ -57,12 +57,11 @@ void Boss::Release()
 void Boss::Update(float dt)
 {
 	SpriteGo::Update(dt);
-	bossAnimation.Update(dt);
 
 	if (player->GetPlaying() && !player->GetChangePhase())
 	{
 		pDelay -= dt;
-
+		bossAnimation.Update(dt);
 		FollowPos();
 
 		if (phaseEffect->GetActive())
@@ -119,55 +118,127 @@ void Boss::Update(float dt)
 				break;
 			}
 		}
+		if (delay)
+		{
+			delayTime -= dt;
+		}
 
+		if (!move)
+		{
+			dir = { 0.f,0.f };
+		}
+
+		bezierTimer += dt * speed;
+
+		if (bezierTimer > 1.f)
+		{
+			bezierTimer = 1.f;
+		}
+
+		Move();
+
+
+		if (curve && !strike)
+		{
+			position = BezierMove(startMovePos, middleMovePos, endMovePos, bezierTimer);
+		}
+		else if (!curve && strike)
+		{
+			position += dir * speed * dt;
+		}
+
+		SetPosition(position);
 	}
-	if (delay)
-	{
-		delayTime -= dt;
-	}
-	if (!move)
-	{
-		dir = { 0.f,0.f };
-	}
-
-	timer += dt * speed;
-
-	if (timer > 1.f)
-	{
-		timer = 1.f;
-	}
-
-	Move();
-
-
-	if (curve && !strike)
-	{
-		position = BezierMove(startMovePos, middleMovePos, endMovePos, timer);
-	}
-	else if (!curve && strike)
-	{
-		position += dir * speed * dt;
-	}
-
-	SetPosition(position);
-
 }
 
-void Boss::SetHitBoxPool(ObjectPool<HitboxGo>* hitBoxPool)
+void Boss::Move()
 {
-	this->pool = hitBoxPool;
+	if (bossAnimation.GetCurrIds() != "BossLeftMove")
+	{
+		if (dir.x < 0)
+		{
+			bossAnimation.Play("BossLeftMove");
+		}
+	}
+	if (bossAnimation.GetCurrIds() != "BossRightMove")
+	{
+		if (dir.x > 0)
+		{
+			bossAnimation.Play("BossRightMove");
+		}
+	}
+	if (bossAnimation.GetCurrIds() != "BossIdle")
+	{
+		if (dir.x == 0 && !bossPrivatePose)
+		{
+			bossAnimation.Play("BossIdle");
+		}
+	}
+	if (bossAnimation.GetCurrIds() != "BossAction")
+	{
+		if (dir.x == 0 && bossPrivatePose)
+		{
+			bossAnimation.Play("BossAction");
+		}
+	}
 }
 
-void Boss::SetTargetPos()
+sf::Vector2f Boss::BezierMove(const sf::Vector2f& pos0, const sf::Vector2f& pos1, const sf::Vector2f& pos2, float moveT)
 {
-	targetPos = player->GetPosition();
+	float u = 1.f - moveT;
+	float tt = moveT * moveT;
+	float uu = u * u;
+
+	sf::Vector2f p = uu * pos0;
+	p += 2.f * u * moveT * pos1;
+	p += tt * pos2;
+
+	return p;
 }
 
-void Boss::SetPlayer(Player* player)
+void Boss::CheckEndPosTypeCurve()
 {
-	this->player = player;
+	if (position == endMovePos && move)
+	{
+		move = false;
+		speed = 0.f;
+		startMovePos = endMovePos;
+		pattenActive = false;
+		count++;
+		bezierTimer = 0.f;
+	}
+}
+void Boss::CheckEndPosTypeStrike()
+{
+	length = Utils::Distance(position, endMovePos);
+	if (length <= 10.f)
+	{
+		move = false;
+		speed = 0.f;
+		position = endMovePos;
+		startMovePos = endMovePos;
+		pattenActive = false;
+		count++;
+		bezierTimer = 0.f;
+	}
 }
 
+void Boss::PattenSetPos()
+{
+	SetStartMovePosX(position.x);
+	SetStartMovePosY(position.y);
+}
+
+void Boss::SetdelayTime(float t)
+{
+	if (!delay)
+	{
+		delay = true;
+		delayTime = t;
+	}
+}
+
+//BulletFire
 void Boss::Fire()
 {
 	Scene* scene = SCENE_MGR.GetCurrScene();
@@ -181,7 +252,7 @@ void Boss::Fire()
 			bullet->SetBulletType((Bullet::Types)0);
 			bullet->Init();
 			bullet->Reset();
-			bullet->BulletStatPos({ position.x,position.y - 25.f });
+			bullet->BulletStartPos({ position.x,position.y - 25.f });
 			bullet->SetCount();
 			bullet->SetSpeed(0.f);
 			bullet->SetFire(1);
@@ -202,7 +273,7 @@ void Boss::Fire2()
 			bullet->SetBulletType((Bullet::Types)0);
 			bullet->Init();
 			bullet->Reset();
-			bullet->BulletStatPos({ position.x,position.y - 25.f });
+			bullet->BulletStartPos({ position.x,position.y - 25.f });
 			bullet->SetCount();
 			bullet->SetSpeed(0.f);
 			bullet->SetDir({ 1.f, 1.f});
@@ -223,7 +294,7 @@ void Boss::Fire3()
 		bullet->SetBulletType((Bullet::Types)0);
 		bullet->Init();
 		bullet->Reset();
-		bullet->BulletStatPos({ position.x,position.y - 25.f });
+		bullet->BulletStartPos({ position.x,position.y - 25.f });
 		bullet->SetCount();
 		bullet->SetSpeed(0.f);
 		bullet->SetFire(3);
@@ -384,7 +455,7 @@ void Boss::Fire7()
 			bullet->SetBulletType((Bullet::Types)1);
 			bullet->Init();
 			bullet->Reset();
-			bullet->BulletStatPos({ position.x,position.y - 25.f });
+			bullet->BulletStartPos({ position.x,position.y - 25.f });
 			bullet->SetCount();
 			bullet->SetSpeed(0.f);
 			bullet->SetDir({ 1.f, 1.f });
@@ -407,7 +478,7 @@ void Boss::Fire8()
 			bullet->SetBulletType((Bullet::Types)1);
 			bullet->Init();
 			bullet->Reset();
-			bullet->BulletStatPos({ position.x,position.y - 25.f });
+			bullet->BulletStartPos({ position.x,position.y - 25.f });
 			bullet->SetCount();
 			bullet->SetSpeed(0.f);
 			bullet->SetDir({ 1.f, 1.f });
@@ -417,52 +488,6 @@ void Boss::Fire8()
 		}
 	}
 }
-
-void Boss::Move()
-{
-	if (bossAnimation.GetCurrIds() != "BossLeftMove")
-	{
-		if (dir.x < 0)
-		{
-			bossAnimation.Play("BossLeftMove");
-		}
-	}
-	if (bossAnimation.GetCurrIds() != "BossRightMove")
-	{
-		if (dir.x > 0)
-		{
-			bossAnimation.Play("BossRightMove");
-		}
-	}
-	if (bossAnimation.GetCurrIds() != "BossIdle")
-	{
-		if (dir.x == 0&&!bossPrivatePose)
-		{
-			bossAnimation.Play("BossIdle");
-		}
-	}
-	if (bossAnimation.GetCurrIds() != "BossAction")
-	{
-		if (dir.x == 0 && bossPrivatePose)
-		{
-			bossAnimation.Play("BossAction");
-		}
-	}
-}
-
-sf::Vector2f Boss::BezierMove(const sf::Vector2f& pos0, const sf::Vector2f& pos1, const sf::Vector2f& pos2, float moveT)
-{
-	float u = 1.f - moveT;
-	float tt = moveT * moveT;
-	float uu = u * u;
-
-	sf::Vector2f p = uu * pos0;
-	p += 2.f * u * moveT * pos1;
-	p += tt * pos2;
-
-	return p;
-}
-
 
 // 1 Phase
 void Boss::MovePatten1() // 좌상단에서 우상단 곡선 이동 하면서 탁막 발사
@@ -1050,53 +1075,4 @@ void Boss::MovePatten10()
 	}
 }
 
-void Boss::CheckEndPosTypeCurve()
-{
-	if (position == endMovePos && move)
-	{
-		move = false;
-		speed = 0.f;
-		startMovePos = endMovePos;
-		pattenActive = false;
-		count++;
-		timer = 0;
-	}
-}
-void Boss::CheckEndPosTypeStrike()
-{
-	length = Utils::Distance(position, endMovePos);
-	if (length <= 10.f)
-	{
-		move = false;
-		speed = 0.f;
-		position = endMovePos;
-		startMovePos = endMovePos;
-		pattenActive = false;
-		count++;
-		timer = 0;
-	}
-}
-void Boss::SetStrikeDir()
-{
-	dir = Utils::Normalize(endMovePos-startMovePos);
-}
-void Boss::PattenSetPos()
-{
-	SetStartMovePosX(position.x);
-	SetStartMovePosY(position.y);
-}
-void Boss::SetdelayTime(float t)
-{
-	if (!delay)
-	{
-		delay = true;
-		delayTime = t;
-	}
-}
-float Boss::GetHitBox()
-{
-	return this->hitbox->GetRaidus();
-}
 
-//gameViewSize.width = 914.5f;
-//gameViewSize.height = 640.f;

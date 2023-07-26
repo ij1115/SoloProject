@@ -167,21 +167,6 @@ void Bullet::Update(float dt)
 	}
 }
 
-void Bullet::SetPool(ObjectPool<Bullet>* bulletPool)
-{
-	this->pool = bulletPool;
-}
-
-void Bullet::SetHitBoxPool(ObjectPool<HitboxGo>* hitboxPool)
-{
-	this->hitboxPool = hitboxPool;
-}
-
-void Bullet::SetEffectPool(ObjectPool<BulletEffect>* effectPool)
-{
-	this->effectPool = effectPool;
-}
-
 void Bullet::CheckDelay()
 {
 	if (delay && delayTime < 0.f)
@@ -198,11 +183,6 @@ void Bullet::BulletRotate(float count)
 	temp.x= dir.x * std::cos(radian) - dir.y * std::sin(radian);
 	temp.y= dir.x * std::sin(radian) + dir.y * std::cos(radian);
 	this->dir = temp;
-}
-
-void Bullet::BulletStatPos(sf::Vector2f Pos)
-{
-	this->SetPosition(Pos);
 }
 
 void Bullet::SetDir(sf::Vector2f Dir)
@@ -316,16 +296,6 @@ void Bullet::SetBulletType(Types pick)
 void Bullet::SetUser(User pick)
 {
 	this->user = pick;
-}
-
-void Bullet::SetRoCount(int i)
-{
-	rotateCount = i;
-}
-
-void Bullet::SetDelCount(int i)
-{
-	delayCount = i;
 }
 
 void Bullet::Destroy()

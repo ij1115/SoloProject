@@ -33,7 +33,6 @@ void SceneTitle::Init()
 	loading_Eng->sortLayer = 105;
 	loading_Eng->SetActive(false);
 
-
 	backGround = (SpriteGo*)AddGo(new SpriteGo("graphics/title00a.png"));
 	backGround->sprite.setScale(size.x / 640.f, size.y / 480.f);
 	backGround->SetPosition(0.f, 0.f);
@@ -92,13 +91,13 @@ void SceneTitle::Init()
 	buttonActive.push_back(button);
 
 	startButton = (SpriteGo*)AddGo(new SpriteGo("graphics/KoreanUi.png"));
-	startButton->sprite.setTextureRect(sf::IntRect(2, 4, 81, 24));
+	startButton->sprite.setTextureRect(buttonActive[1]);
 	startButton->sprite.setScale(2.f, 2.f);
 	startButton->SetPosition(1000.f, 530.f);
 	startButton->sortLayer = 103;
 
 	exitButton = (SpriteGo*)AddGo(new SpriteGo("graphics/KoreanUi.png"));
-	exitButton->sprite.setTextureRect(sf::IntRect(131, 228, 37, 25));
+	exitButton->sprite.setTextureRect(buttonActive[2]);
 	exitButton->sprite.setScale(2.f, 2.f);
 	exitButton->SetPosition(1005.f, 580.f);
 	exitButton->sortLayer = 103;
@@ -106,6 +105,8 @@ void SceneTitle::Init()
 
 void SceneTitle::Release()
 {
+	buttonActive.clear();
+
 	for (auto go : gameObjects)
 	{
 		delete go;

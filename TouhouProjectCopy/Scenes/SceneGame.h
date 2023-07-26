@@ -15,15 +15,13 @@ class SceneGame : public Scene
 {
 protected:
 	AnimationController endingAni;
-	SpriteGo* ending;
+
 	Player* player;
 	Boss* boss;
-	HitboxGo* pHitbox;
-	HitboxGo* bHitbox;
-	HitboxGo* grazeBox;
-	SpriteGo* graze;
-	SpriteGo* immortal;
+
 	SpriteGo* backGround;
+	SpriteGo* ending;
+
 	sf::Vector2f backGroundScale = { 3.f,3.f };
 
 	sf::Sound gameMusic;
@@ -50,58 +48,35 @@ protected:
 	float changeTimer = 0.f;
 	int score;
 
-	int num1;
-	int num2;
-	int num3;
-	int num4;
-	int num5;
-
 	//Ui
-	
-		SpriteGo* bossName;
 		ShapeGo* bossHp;
 
 		SpriteGo* bossClear;
 		SpriteGo* clearFailed;
 
-		SpriteGo* life1;
-		SpriteGo* life2;
+		std::vector<SpriteGo*> life;
 
 		std::vector<sf::IntRect> font;
-
-		SpriteGo* timer1;
-		SpriteGo* timer2;
-		SpriteGo* timer3;
-		SpriteGo* timer4;
-		SpriteGo* timer5;
-
-		SpriteGo* score1;
-		SpriteGo* score2;
-		SpriteGo* score3;
-		SpriteGo* score4;
-		SpriteGo* score5;
-
-		SpriteGo* power1;
-		SpriteGo* power2;
-		SpriteGo* power3;
-		SpriteGo* power4;
-		SpriteGo* power5;
-
+		std::vector<SpriteGo*> numberUiFont;
+		//0~4 timer font
+		//5~9 score font
+		//10~14 power font
 
 		int pauseMenuSelect = 0;
 		int realySelect = 0;
-		ShapeGo* pauseBackGround;
-		SpriteGo* pauseBar;
-		SpriteGo* pauseMenu;
-		SpriteGo* returnToGame;
-		SpriteGo* returnToTitle;
-		SpriteGo* giveUpToReplay;
-		SpriteGo* realyBar;
-		SpriteGo* realy;
-		SpriteGo* yes;
-		SpriteGo* no;
-	
 
+		ShapeGo* pauseBackGround;
+		std::vector<SpriteGo*> pauseUi;
+		// 0 pauseBar;
+		// 1 pauseMenu;
+		// 2 returnToGame;
+		// 3 returnToTitle;
+		// 4 giveUpToReplay;
+		// 5 realyBar;
+		// 6 realy;
+		// 7 yes;
+		// 8 no;
+	
 public:
 	SceneGame();
 	virtual ~SceneGame() override = default;
@@ -119,13 +94,14 @@ public:
 	template<class T>
 	void ClearPool(ObjectPool<T>& pool);
 
-	void Pause(bool pause);
-
-	void Realy(bool realyYN);
+	void Pause();
+	void PauseMenu(float dt);
+	void PhaseChange();
 
 	void TimerFont();
 	void PowerFont();
 	void ScoreFont();
+	void LifeFont();
 };
 
 template<class T>
