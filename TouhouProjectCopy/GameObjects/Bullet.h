@@ -16,8 +16,8 @@ public:
 	};
 	enum class Types
 	{
-		Shape,
-		Line,
+		Type_One,
+		Type_Two,
 	};
 protected:
 	bool playing;
@@ -31,11 +31,9 @@ protected:
 
 	bool useRotate = false;
 	float rotateRadin = 60.f;
-	int rotateCount = 0;
 
 	bool useDelayTime = false;
 	float sleepTime = 1.f;
-	int delayCount = 0;
 	bool move = true;
 
 	bool delay = false;
@@ -73,9 +71,9 @@ public:
 	void SetPlayer(Player* player) { this->player = player; }
 	void SetBoss(Boss* boss) { this->boss = boss; }
 	void SetFire(int n) { this->setFire = n; }
-	void SetPool(ObjectPool<Bullet>* bulletPool);
-	void SetHitBoxPool(ObjectPool<HitboxGo>* hitboxPool);
-	void SetEffectPool(ObjectPool<BulletEffect>* effectPool);
+	void SetPool(ObjectPool<Bullet>* bulletPool){ this->pool = bulletPool; }
+	void SetHitBoxPool(ObjectPool<HitboxGo>* hitboxPool){ this->hitboxPool = hitboxPool; }
+	void SetEffectPool(ObjectPool<BulletEffect>* effectPool){ this->effectPool = effectPool; }
 	void SetBulletType(Types pick);
 	void SetUser(User pick);
 	void SetCount() { this->count =0; }
@@ -96,7 +94,7 @@ public:
 	void SetDelayTime(float t) { if (!delay) { this->delay = true; this->delayTime = t; } }
 	void CheckDelay();
 	void BulletRotate(float count);
-	void BulletStatPos(sf::Vector2f Pos);
+	void BulletStartPos(sf::Vector2f Pos){ this->SetPosition(Pos); }
 
 
 	void SetRoCount(int i);
@@ -108,6 +106,7 @@ public:
 	void BulletPatten2();
 	void BulletPatten3();
 	void BulletPatten4();
-//Ãæµ¹  {}
+	void BulletPatten5();
 };
+
 

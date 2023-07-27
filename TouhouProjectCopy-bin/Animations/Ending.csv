@@ -1,0 +1,25 @@
+ID,FPS,LOOPTYPE,,
+Ending,1,0,,
+,,,,
+TEXTURE ID,LEFT,TOP,WIDTH,HEIGHT
+graphics/e00a.png,0,0,640,480
+graphics/e00b.png,0,0,640,480
+graphics/e01b.png,0,0,640,480
+graphics/e02b.png,0,0,640,480
+graphics/e03a.png,0,0,640,480
+graphics/e03b.png,0,0,640,480
+graphics/e04b.png,0,0,640,480
+graphics/e05b.png,0,0,640,480
+graphics/e06b.png,0,0,640,480
+graphics/e06c.png,0,0,640,480
+graphics/e07b.png,0,0,640,480
+graphics/e07c.png,0,0,640,480
+graphics/e08b.png,0,0,640,480
+graphics/e08c.png,0,0,640,480
+graphics/e09b.png,0,0,640,480
+graphics/e09c.png,0,0,640,480
+graphics/e10a.png,0,0,640,480
+graphics/e10b.png,0,0,640,480
+graphics/e10c.png,0,0,640,480
+graphics/e11b.png,0,0,640,480
+graphics/e11c.png,0,0,640,480

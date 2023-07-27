@@ -64,7 +64,7 @@ void Bullet::Update(float dt)
 		if (user == User::Player)
 		{
 			sprite.rotate(720 * dt);
-			if (this->type == Types::Line)
+			if (this->type == Types::Type_Two)
 			{
 				SetDirBossPos();
 			}
@@ -73,21 +73,23 @@ void Bullet::Update(float dt)
 
 		if (user == User::Enemy)
 		{
-			if (this->setFire == 1)
+			switch (this->setFire)
 			{
+			case 1:
 				BulletPatten1();
-			}
-			else if (this->setFire == 2)
-			{
+				break;
+			case 2:
 				BulletPatten2();
-			}
-			else if (this->setFire == 3)
-			{
+				break;
+			case 3:
 				BulletPatten3();
-			}
-			else if (this->setFire == 4)
-			{
+				break;
+			case 4:
 				BulletPatten4();
+				break;
+			case 5:
+				BulletPatten5();
+				break;
 			}
 		}
 		if (delay)
@@ -96,30 +98,7 @@ void Bullet::Update(float dt)
 		}
 		CheckDelay();
 
-
-		//if (useRotate && rotateCount > 0 && move)
-		//{
-		//	--rotateCount;
-		//	BulletRotate(rotateRadin);
-		//}
-
-		//if (useDelayTime&& delayCount>0&&move)
-		//{	
-		//	move = false;
-		//	temp = dir;
-		//	dir = { 0.f,0.f };
-		//	--delayCount;
-		//	delayTime = sleepTime;
-		//
-		//}
-		//else if (delayTime < 0.f && !move)
-		//{
-		//	dir = temp;
-		//	move = true;
-		//	BulletRotate(-rotateRadin);
-		//}
-
-		if (user == User::Player && BossCollider() && type == Types::Shape)
+		if (user == User::Player && BossCollider() && type == Types::Type_One)
 		{
 			BulletEffect* effect = effectPool->Get();
 			effect->textureId = "graphics/Player.png";
@@ -137,9 +116,9 @@ void Bullet::Update(float dt)
 			hitboxPool->Return(this->hitbox);
 			pool->Return(this);
 			player->PlusScore(1);
-			boss->BossDamage(5);
+			boss->BossDamage(7);
 		}
-		else if (user == User::Player && BossCollider() && type == Types::Line)
+		else if (user == User::Player && BossCollider() && type == Types::Type_Two)
 		{
 			BulletEffect* effect = effectPool->Get();
 			effect->textureId = "graphics/etama6.png";
@@ -155,7 +134,7 @@ void Bullet::Update(float dt)
 			hitboxPool->Return(this->hitbox);
 			pool->Return(this);
 			player->PlusScore(1);
-			boss->BossDamage(3);
+			boss->BossDamage(4);
 		}
 		else if (user == User::Enemy && PlayerCollider() && !player->GetHitDelay())
 		{
@@ -188,21 +167,6 @@ void Bullet::Update(float dt)
 	}
 }
 
-void Bullet::SetPool(ObjectPool<Bullet>* bulletPool)
-{
-	this->pool = bulletPool;
-}
-
-void Bullet::SetHitBoxPool(ObjectPool<HitboxGo>* hitboxPool)
-{
-	this->hitboxPool = hitboxPool;
-}
-
-void Bullet::SetEffectPool(ObjectPool<BulletEffect>* effectPool)
-{
-	this->effectPool = effectPool;
-}
-
 void Bullet::CheckDelay()
 {
 	if (delay && delayTime < 0.f)
@@ -215,13 +179,10 @@ void Bullet::CheckDelay()
 void Bullet::BulletRotate(float count)
 {
 	float radian = count * M_PI / 180;
-	this->dir.x = dir.x * std::cos(radian) - dir.y * std::sin(radian);
-	this->dir.y = dir.x * std::sin(radian) + dir.y * std::cos(radian);
-}
-
-void Bullet::BulletStatPos(sf::Vector2f Pos)
-{
-	this->SetPosition(Pos);
+	sf::Vector2f temp;
+	temp.x= dir.x * std::cos(radian) - dir.y * std::sin(radian);
+	temp.y= dir.x * std::sin(radian) + dir.y * std::cos(radian);
+	this->dir = temp;
 }
 
 void Bullet::SetDir(sf::Vector2f Dir)
@@ -235,7 +196,10 @@ void Bullet::SetBulletType(Types pick)
 
 	if(user==User::Player)
 	{
-		if (type == Types::Shape)
+		switch (type)
+		{
+
+		case Types::Type_One:
 		{
 			textureId = "graphics/Player.png";
 			sprite.setTexture(*RESOURCE_MGR.GetTexture("graphics/Player.png"));
@@ -254,8 +218,9 @@ void Bullet::SetBulletType(Types pick)
 			hitbox->SetType(0);
 			SCENE_MGR.GetCurrScene()->AddGo(hitbox);
 			sprite.setTextureRect((sf::IntRect)tRect);
+			break;
 		}
-		else if (type == Types::Line)
+		case Types::Type_Two:
 		{
 			textureId = "graphics/Player.png";
 			sprite.setTexture(*RESOURCE_MGR.GetTexture("graphics/Player.png"));
@@ -274,11 +239,15 @@ void Bullet::SetBulletType(Types pick)
 			hitbox->SetType(0);
 			SCENE_MGR.GetCurrScene()->AddGo(hitbox);
 			sprite.setTextureRect((sf::IntRect)tRect);
+			break;
+		}
 		}
 	}
 	if (user == User::Enemy)
 	{
-		if (type == Types::Shape)
+		switch (type)
+		{
+		case Types::Type_One:
 		{
 			textureId = "graphics/bullet.png";
 			sprite.setTexture(*RESOURCE_MGR.GetTexture("graphics/bullet.png"));
@@ -294,9 +263,32 @@ void Bullet::SetBulletType(Types pick)
 			hitbox->SetHitBoxOutLineThickness(1);
 			hitbox->SetOrigin(Origins::MC);
 			hitbox->sortLayer = -2;
-			hitbox->SetType(0);
+			hitbox->SetType(1);
 			SCENE_MGR.GetCurrScene()->AddGo(hitbox);
 			sprite.setTextureRect((sf::IntRect)tRect);
+			break;
+		}
+		case Types::Type_Two:
+		{
+			textureId = "graphics/bullet.png";
+			sprite.setTexture(*RESOURCE_MGR.GetTexture("graphics/bullet.png"));
+			sf::FloatRect tRect;
+			tRect.left = 1.f;
+			tRect.top = 193.f;
+			tRect.width = 62.f;
+			tRect.height = 62.f;
+			hitbox = hitboxPool->Get();
+			hitbox->SetHitBoxSize(31.f);
+			hitbox->SetHitBoxFillColor(sf::Color::Transparent);
+			hitbox->SetHitBoxOutLineColor(sf::Color::Red);
+			hitbox->SetHitBoxOutLineThickness(1);
+			hitbox->SetOrigin(Origins::MC);
+			hitbox->sortLayer = -2;
+			hitbox->SetType(1);
+			SCENE_MGR.GetCurrScene()->AddGo(hitbox);
+			sprite.setTextureRect((sf::IntRect)tRect);
+			break;
+		}
 		}
 	}
 }
@@ -304,16 +296,6 @@ void Bullet::SetBulletType(Types pick)
 void Bullet::SetUser(User pick)
 {
 	this->user = pick;
-}
-
-void Bullet::SetRoCount(int i)
-{
-	rotateCount = i;
-}
-
-void Bullet::SetDelCount(int i)
-{
-	delayCount = i;
 }
 
 void Bullet::Destroy()
@@ -414,7 +396,6 @@ void Bullet::BulletPatten2()
 	if (count == 0)
 	{
 		SetSpeed(0.f);
-		SetDir({ Utils::RandomRange(-1.f,1.f),Utils::RandomRange(-1.f,1.f) });
 		CountUp();
 	}
 	else if (count == 1)
@@ -423,7 +404,7 @@ void Bullet::BulletPatten2()
 	}
 	else if (count == 2)
 	{
-		SetSpeed(100.f);
+		SetSpeed(700.f);
 		CountUp();
 	}
 }
@@ -482,7 +463,7 @@ void Bullet::BulletPatten4()
 		CountUp();
 		break;
 	case 6:
-		SetDelayTime(0.1f);
+		SetDelayTime(1.f);
 		break;
 	case 7:
 		BulletRotate(15);
@@ -496,12 +477,99 @@ void Bullet::BulletPatten4()
 		CountUp();
 		break;
 	case 10:
-		SetDirPlayerPos();
-		CountUp();
+		SetDelayTime(0.1f);
 		break;
 	case 11:
+		BulletRotate(15);
+		CountUp();
+		break;
+	case 12:
+		SetDelayTime(1.f);
+		break;
+	case 13:
+		BulletRotate(15);
+		CountUp();
+		break;
+	case 14:
+		SetDelayTime(0.1f);
+		break;
+	case 15:
+		BulletRotate(15);
+		CountUp();
+		break;
+	case 16:
+		SetDelayTime(0.1f);
+		break;
+	case 17:
+		BulletRotate(15);
+		CountUp();
+		break;
+	case 18:
+		SetDelayTime(1.f);
+		break;
+	case 19:
+		BulletRotate(15);
+		CountUp();
+		break;
+	case 20:
+		SetDelayTime(0.1f);
+		break;
+	case 21:
+		BulletRotate(15);
+		CountUp();
+		break;
+	case 22:
+		SetDelayTime(0.1f);
+		break;
+	case 23:
+		BulletRotate(15);
+		CountUp();
+		break;
+	case 24:
+		SetDelayTime(1.f);
+		break;
+	case 25:
+		BulletRotate(15);
+		CountUp();
+		break;
+	case 26:
+		SetDelayTime(0.1f);
+		break;
+	case 27:
+		BulletRotate(15);
+		CountUp();
+		break;
+	case 28:
+		SetDelayTime(0.1f);
+		break;
+	case 29:
+		BulletRotate(15);
+		CountUp();
+		break;
+	case 30:
 		SetSpeed(600.f);
 		CountUp();
 		break;
 	}
+}
+
+void Bullet::BulletPatten5()
+{
+	switch (count)
+	{
+	case 0:
+		SetSpeed(0.f);
+		CountUp();
+		break;
+
+	case 1:
+		SetDelayTime(1.f);
+		break;
+
+	case 2:
+		SetSpeed(300.f);
+		CountUp();
+		break;
+	}
+
 }

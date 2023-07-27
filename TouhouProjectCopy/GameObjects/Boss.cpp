@@ -6,9 +6,8 @@
 #include "scene.h"
 #include "SceneGame.h"
 #include "SceneMgr.h"
-#include "Player.h"
-#include "Bullet.h"
 
+#include "Bullet.h"
 
 void Boss::Init()
 {
@@ -30,16 +29,21 @@ void Boss::Reset()
 
 	hit.setBuffer(*RESOURCE_MGR.GetSoundBuffer("sound/se_damage00.wav"));
 	hit.setVolume(25);
+	attack.setBuffer(*RESOURCE_MGR.GetSoundBuffer("sound/se_tan02.wav"));
+	attack.setVolume(15);
+
 	SetPosition(gameView.left + gameView.width / 2, gameView.top -100.f);
 	bossAnimation.Play("BossIdle");
 	SetOrigin(origin);
 	SetActive(true);
 	action = false;
 	speed = 0.0f;
-	timer = 0.f;
+	bezierTimer = 0.f;
 	dir = { 0.f,0.f };
 	count = 0;
-	hp=maxHp;
+	ResetHP();
+	phaseEffect->SetActive(false);
+	phase = false;
 }
 
 void Boss::Release()
@@ -53,40 +57,66 @@ void Boss::Release()
 void Boss::Update(float dt)
 {
 	SpriteGo::Update(dt);
-	bossAnimation.Update(dt);
 
-	if (player->GetPlaying())
+	if (player->GetPlaying() && !player->GetChangePhase())
 	{
 		pDelay -= dt;
+		bossAnimation.Update(dt);
+		FollowPos();
 
-		HitBoxPos();
-		//std::cout << delayTime << std::endl;
-		//std::cout << hp << std::endl;
+		if (phaseEffect->GetActive())
+		{
+			phaseEffect->sprite.rotate(360 * dt);
+		}
 
 		if (!action)
 		{
-			actionNum = Utils::RandomRange(1, 6);
-			action = true;
+			if (!phase)
+			{
+				actionNum = Utils::RandomRange(1, 8);
+				action = true;
+			}
+			else if (phase)
+			{
+				actionNum = Utils::RandomRange(1, 11);
+				action = true;
+			}
 		}
-		else if (action && actionNum == 1)
+		else if (action)
 		{
-			Patten1();
-		}
-		else if (action && actionNum == 2)
-		{
-			Patten2();
-		}
-		else if (action && actionNum == 3)
-		{
-			Patten3();
-		}
-		else if (action && actionNum == 4)
-		{
-			Patten4();
-		}
-		else if (action && actionNum == 5)
-		{
-			Patten5();
+			switch (actionNum)
+			{
+			case 1:
+				MovePatten1();
+				break;
+			case 2:
+				MovePatten2();
+				break;
+			case 3:
+				MovePatten3();
+				break;
+			case 4:
+				MovePatten4();
+				break;
+			case 5:
+				MovePatten5();
+				break;
+			case 6:
+				MovePatten6();
+				break;
+			case 7:
+				MovePatten7();
+				break;
+			case 8:
+				MovePatten8();
+				break;
+			case 9:
+				MovePatten9();
+				break;
+			case 10:
+				MovePatten10();
+				break;
+			}
 		}
 		if (delay)
 		{
@@ -98,11 +128,11 @@ void Boss::Update(float dt)
 			dir = { 0.f,0.f };
 		}
 
-		timer += dt * speed;
+		bezierTimer += dt * speed;
 
-		if (timer > 1.f)
+		if (bezierTimer > 1.f)
 		{
-			timer = 1.f;
+			bezierTimer = 1.f;
 		}
 
 		Move();
@@ -110,7 +140,7 @@ void Boss::Update(float dt)
 
 		if (curve && !strike)
 		{
-			position = BezierMove(startMovePos, middleMovePos, endMovePos, timer);
+			position = BezierMove(startMovePos, middleMovePos, endMovePos, bezierTimer);
 		}
 		else if (!curve && strike)
 		{
@@ -121,59 +151,138 @@ void Boss::Update(float dt)
 	}
 }
 
-void Boss::SetHitBoxPool(ObjectPool<HitboxGo>* hitBoxPool)
+void Boss::Move()
 {
-	this->pool = hitBoxPool;
+	if (bossAnimation.GetCurrIds() != "BossLeftMove")
+	{
+		if (dir.x < 0)
+		{
+			bossAnimation.Play("BossLeftMove");
+		}
+	}
+	if (bossAnimation.GetCurrIds() != "BossRightMove")
+	{
+		if (dir.x > 0)
+		{
+			bossAnimation.Play("BossRightMove");
+		}
+	}
+	if (bossAnimation.GetCurrIds() != "BossIdle")
+	{
+		if (dir.x == 0 && !bossPrivatePose)
+		{
+			bossAnimation.Play("BossIdle");
+		}
+	}
+	if (bossAnimation.GetCurrIds() != "BossAction")
+	{
+		if (dir.x == 0 && bossPrivatePose)
+		{
+			bossAnimation.Play("BossAction");
+		}
+	}
 }
 
-void Boss::SetTargetPos()
+sf::Vector2f Boss::BezierMove(const sf::Vector2f& pos0, const sf::Vector2f& pos1, const sf::Vector2f& pos2, float moveT)
 {
-	targetPos = player->GetPosition();
+	float u = 1.f - moveT;
+	float tt = moveT * moveT;
+	float uu = u * u;
+
+	sf::Vector2f p = uu * pos0;
+	p += 2.f * u * moveT * pos1;
+	p += tt * pos2;
+
+	return p;
 }
 
-void Boss::SetPlayer(Player* player)
+void Boss::CheckEndPosTypeCurve()
 {
-	this->player = player;
+	if (position == endMovePos && move)
+	{
+		move = false;
+		speed = 0.f;
+		startMovePos = endMovePos;
+		pattenActive = false;
+		count++;
+		bezierTimer = 0.f;
+	}
+}
+void Boss::CheckEndPosTypeStrike()
+{
+	length = Utils::Distance(position, endMovePos);
+	if (length <= 10.f)
+	{
+		move = false;
+		speed = 0.f;
+		position = endMovePos;
+		startMovePos = endMovePos;
+		pattenActive = false;
+		count++;
+		bezierTimer = 0.f;
+	}
 }
 
+void Boss::PattenSetPos()
+{
+	SetStartMovePosX(position.x);
+	SetStartMovePosY(position.y);
+}
+
+void Boss::SetdelayTime(float t)
+{
+	if (!delay)
+	{
+		delay = true;
+		delayTime = t;
+	}
+}
+
+//BulletFire
 void Boss::Fire()
 {
 	Scene* scene = SCENE_MGR.GetCurrScene();
 	SceneGame* sceneGame = dynamic_cast<SceneGame*>(scene);
 	if (sceneGame != nullptr)
 	{
-		sceneGame->GetBullet(bullet);
-		bullet->SetUser((Bullet::User)1);
-		bullet->SetBulletType((Bullet::Types)0);
-		bullet->Init();
-		bullet->Reset();
-		bullet->BulletStatPos({ position.x,position.y - 25.f });
-		bullet->SetCount();
-		bullet->SetSpeed(0.f);
-		bullet->SetFire(1);
-		sceneGame->AddGo(bullet);
+		for (int i = 0; i < 20; ++i)
+		{
+			sceneGame->GetBullet(bullet);
+			bullet->SetUser((Bullet::User)1);
+			bullet->SetBulletType((Bullet::Types)0);
+			bullet->Init();
+			bullet->Reset();
+			bullet->BulletStartPos({ position.x,position.y - 25.f });
+			bullet->SetCount();
+			bullet->SetSpeed(0.f);
+			bullet->SetFire(1);
+			sceneGame->AddGo(bullet);
+		}
 	}
 }
-
 void Boss::Fire2()
 {
 	Scene* scene = SCENE_MGR.GetCurrScene();
 	SceneGame* sceneGame = dynamic_cast<SceneGame*>(scene);
 	if (sceneGame != nullptr)
 	{
-		sceneGame->GetBullet(bullet);
-		bullet->SetUser((Bullet::User)1);
-		bullet->SetBulletType((Bullet::Types)0);
-		bullet->Init();
-		bullet->Reset();
-		bullet->BulletStatPos({ position.x,position.y - 25.f });
-		bullet->SetCount();
-		bullet->SetSpeed(0.f);
-		bullet->SetFire(2);
-		sceneGame->AddGo(bullet);
+		for (int i = 0; i < 45; ++i)
+		{
+			sceneGame->GetBullet(bullet);
+			bullet->SetUser((Bullet::User)1);
+			bullet->SetBulletType((Bullet::Types)0);
+			bullet->Init();
+			bullet->Reset();
+			bullet->BulletStartPos({ position.x,position.y - 25.f });
+			bullet->SetCount();
+			bullet->SetSpeed(0.f);
+			bullet->SetDir({ 1.f, 1.f});
+			bullet->BulletRotate(8* i);
+			bullet->SetFire(2);
+			sceneGame->AddGo(bullet);
+		}
 	}
 }
-
 void Boss::Fire3()
 {
 	Scene* scene = SCENE_MGR.GetCurrScene();
@@ -185,14 +294,13 @@ void Boss::Fire3()
 		bullet->SetBulletType((Bullet::Types)0);
 		bullet->Init();
 		bullet->Reset();
-		bullet->BulletStatPos({ position.x,position.y - 25.f });
+		bullet->BulletStartPos({ position.x,position.y - 25.f });
 		bullet->SetCount();
 		bullet->SetSpeed(0.f);
 		bullet->SetFire(3);
 		sceneGame->AddGo(bullet);
 	}
 }
-
 void Boss::Fire4(int c)
 {
 	Scene* scene = SCENE_MGR.GetCurrScene();
@@ -252,56 +360,141 @@ void Boss::Fire4(int c)
 		sceneGame->AddGo(bullet);
 	}
 }
-
-void Boss::Move()
+void Boss::Fire5(int c)
 {
-	if (bossAnimation.GetCurrIds() != "BossLeftMove")
+	Scene* scene = SCENE_MGR.GetCurrScene();
+	SceneGame* sceneGame = dynamic_cast<SceneGame*>(scene);
+	if (sceneGame != nullptr)
 	{
-		if (dir.x < 0)
+		for (int i = 0; i <5; ++i)
 		{
-			bossAnimation.Play("BossLeftMove");
+			sceneGame->GetBullet(bullet);
+			bullet->SetUser((Bullet::User)1);
+			bullet->SetBulletType((Bullet::Types)0);
+			bullet->Init();
+			bullet->Reset();
+			bullet->SetCount();
+			bullet->SetPosition(position.x, position.y+25.f);
+			bullet->SetDir({ 0.f, 1.f });
+			bullet->SetDelayTime(0.01f* c);
+			bullet->SetSpeed(0.f);
+			bullet->BulletRotate(-15 * i);
+			bullet->SetFire(5);
+			sceneGame->AddGo(bullet);
+		}
+
+		for (int i = 0; i < 5; ++i)
+		{
+			sceneGame->GetBullet(bullet);
+			bullet->SetUser((Bullet::User)1);
+			bullet->SetBulletType((Bullet::Types)0);
+			bullet->Init();
+			bullet->Reset();
+			bullet->SetCount();
+			bullet->SetPosition(position.x, position.y-25.f);
+			bullet->SetDir({ 0.f, -1.f });
+			bullet->SetDelayTime(0.01f * c);
+			bullet->SetSpeed(0.f);
+			bullet->BulletRotate(15 * i);
+			bullet->SetFire(5);
+			sceneGame->AddGo(bullet);
 		}
 	}
-	if (bossAnimation.GetCurrIds() != "BossRightMove")
+}
+void Boss::Fire6(int c)
+{
+	Scene* scene = SCENE_MGR.GetCurrScene();
+	SceneGame* sceneGame = dynamic_cast<SceneGame*>(scene);
+	if (sceneGame != nullptr)
 	{
-		if (dir.x > 0)
+		for (int i = 0; i < 5; ++i)
 		{
-			bossAnimation.Play("BossRightMove");
+			sceneGame->GetBullet(bullet);
+			bullet->SetUser((Bullet::User)1);
+			bullet->SetBulletType((Bullet::Types)0);
+			bullet->Init();
+			bullet->Reset();
+			bullet->SetCount();
+			bullet->SetPosition(position.x, position.y + 25.f);
+			bullet->SetDir({ 0.f, 1.f });
+			bullet->SetDelayTime(0.01f * c);
+			bullet->SetSpeed(0.f);
+			bullet->BulletRotate(15 * i);
+			bullet->SetFire(5);
+			sceneGame->AddGo(bullet);
+		}
+
+		for (int i = 0; i < 5; ++i)
+		{
+			sceneGame->GetBullet(bullet);
+			bullet->SetUser((Bullet::User)1);
+			bullet->SetBulletType((Bullet::Types)0);
+			bullet->Init();
+			bullet->Reset();
+			bullet->SetCount();
+			bullet->SetPosition(position.x, position.y - 25.f);
+			bullet->SetDir({ 0.f, -1.f });
+			bullet->SetDelayTime(0.01f * c);
+			bullet->SetSpeed(0.f);
+			bullet->BulletRotate(-15 * i);
+			bullet->SetFire(5);
+			sceneGame->AddGo(bullet);
 		}
 	}
-	if (bossAnimation.GetCurrIds() != "BossIdle")
+}
+void Boss::Fire7()
+{
+	Scene* scene = SCENE_MGR.GetCurrScene();
+	SceneGame* sceneGame = dynamic_cast<SceneGame*>(scene);
+	if (sceneGame != nullptr)
 	{
-		if (dir.x == 0&&!bossPrivatePose)
+		for (int i = 0; i < 16; ++i)
 		{
-			bossAnimation.Play("BossIdle");
+			sceneGame->GetBullet(bullet);
+			bullet->SetUser((Bullet::User)1);
+			bullet->SetBulletType((Bullet::Types)1);
+			bullet->Init();
+			bullet->Reset();
+			bullet->BulletStartPos({ position.x,position.y - 25.f });
+			bullet->SetCount();
+			bullet->SetSpeed(0.f);
+			bullet->SetDir({ 1.f, 1.f });
+			bullet->BulletRotate(22.5f * i);
+			bullet->SetFire(5);
+			sceneGame->AddGo(bullet);
 		}
 	}
-	if (bossAnimation.GetCurrIds() != "BossAction")
+}
+void Boss::Fire8()
+{
+	Scene* scene = SCENE_MGR.GetCurrScene();
+	SceneGame* sceneGame = dynamic_cast<SceneGame*>(scene);
+	if (sceneGame != nullptr)
 	{
-		if (dir.x == 0 && bossPrivatePose)
+		for (int i = 0; i < 16; ++i)
 		{
-			bossAnimation.Play("BossAction");
+			sceneGame->GetBullet(bullet);
+			bullet->SetUser((Bullet::User)1);
+			bullet->SetBulletType((Bullet::Types)1);
+			bullet->Init();
+			bullet->Reset();
+			bullet->BulletStartPos({ position.x,position.y - 25.f });
+			bullet->SetCount();
+			bullet->SetSpeed(0.f);
+			bullet->SetDir({ 1.f, 1.f });
+			bullet->BulletRotate(33.75f * i);
+			bullet->SetFire(5);
+			sceneGame->AddGo(bullet);
 		}
 	}
 }
 
-sf::Vector2f Boss::BezierMove(const sf::Vector2f& pos0, const sf::Vector2f& pos1, const sf::Vector2f& pos2, float moveT)
+// 1 Phase
+void Boss::MovePatten1() // 좌상단에서 우상단 곡선 이동 하면서 탁막 발사
 {
-	float u = 1.f - moveT;
-	float tt = moveT * moveT;
-	float uu = u * u;
-
-	sf::Vector2f p = uu * pos0;
-	p += 2.f * u * moveT * pos1;
-	p += tt * pos2;
-
-	return p;
-}
-
-void Boss::Patten1()
-{
-	if(count==0)
+	switch (count)
 	{
+	case 0:
 		move = true;
 		PattenSetPos();
 		SetEndMovePosX(center.x - 200.f);
@@ -310,9 +503,8 @@ void Boss::Patten1()
 		SetStrike();
 		SetStrikeDir();
 		CheckEndPosTypeStrike();
-	}
-	else if (count == 1)
-	{
+		break;
+	case 1:
 		move = true;
 		SetMiddleMovePosX(center.x);
 		SetMiddleMovePosY(center.y);
@@ -322,54 +514,52 @@ void Boss::Patten1()
 		SetSpeed(0.5f);
 		SetCurve();
 		CheckEndPosTypeCurve();
-		pMaxCount = 100;
+		pMaxCount = 20;
 		pCount = 0;
 		pDelay = 0.01f;
-	}
-	else if (count == 2)
-	{
+		break;
+	case 2:
 		move = true;
 		SetEndMovePosX(center.x);
 		SetEndMovePosY(center.y);
 		SetSpeed(400.f);
-		if (pCount < pMaxCount&&pDelay<0.f)
+		if (pCount < pMaxCount && pDelay < 0.f)
 		{
 			Fire();
+			attack.play();
 			pCount++;
-			pDelay = 0.01f;
+			pDelay = 0.1f;
 		}
 		SetStrike();
 		SetStrikeDir();
 		CheckEndPosTypeStrike();
-	}
-	else if (count == 3)
-	{
+		break;
+	case 3:
 		move = true;
-		SetMiddleMovePosX(center.x-100.f);
-		SetMiddleMovePosY(center.y-200.f);
+		SetMiddleMovePosX(center.x - 100.f);
+		SetMiddleMovePosY(center.y - 200.f);
 		SetEndMovePosX(center.x - 250.f);
 		SetEndMovePosY(center.y - 50.f);
 		SetDirX(-1.f);
 		SetSpeed(0.5f);
 		SetCurve();
 		CheckEndPosTypeCurve();
-	}
-	else if (count == 4)
-	{
+		break;
+	case 4:
 		SetdelayTime(1.5f);
 		TimeOut();
-	}
-	else if (count == 5)
-	{
+		break;
+	case 5:
 		PoseFalse();
 		action = false;
 		count = 0;
 	}
 }
-void Boss::Patten2()
+void Boss::MovePatten2() // 우상단에서 좌상단 곡선 이동 하면서 탁막 발사
 {
-	if (count == 0)
+	switch (count)
 	{
+	case 0:
 		move = true;
 		PattenSetPos();
 		SetEndMovePosX(center.x + 200.f);
@@ -378,9 +568,8 @@ void Boss::Patten2()
 		SetStrike();
 		SetStrikeDir();
 		CheckEndPosTypeStrike();
-	}
-	else if (count == 1)
-	{
+		break;
+	case 1:
 		move = true;
 		SetMiddleMovePosX(center.x);
 		SetMiddleMovePosY(center.y);
@@ -390,12 +579,11 @@ void Boss::Patten2()
 		SetSpeed(0.5f);
 		SetCurve();
 		CheckEndPosTypeCurve();
-		pMaxCount = 100;
+		pMaxCount = 20;
 		pCount = 0;
 		pDelay = 0.01f;
-	}
-	else if (count == 2)
-	{
+		break;
+	case 2:
 		move = true;
 		SetEndMovePosX(center.x);
 		SetEndMovePosY(center.y);
@@ -403,15 +591,16 @@ void Boss::Patten2()
 		if (pCount < pMaxCount && pDelay < 0.f)
 		{
 			Fire();
+			attack.play();
 			pCount++;
-			pDelay = 0.01f;
+			pDelay = 0.1f;
 		}
 		SetStrike();
 		SetStrikeDir();
 		CheckEndPosTypeStrike();
-	}
-	else if (count == 3)
-	{
+		break;
+
+	case 3:
 		move = true;
 		SetMiddleMovePosX(center.x - 100.f);
 		SetMiddleMovePosY(center.y - 200.f);
@@ -421,120 +610,19 @@ void Boss::Patten2()
 		SetSpeed(0.5f);
 		SetCurve();
 		CheckEndPosTypeCurve();
-	}
-	else if (count == 4)
-	{
+		break;
+	case 4:
 		SetdelayTime(1.5f);
 		TimeOut();
-	}
-	else if (count == 5)
-	{
+		break;
+	case 5:
 		PoseFalse();
 		action = false;
 		count = 0;
+		break;
 	}
 }
-void Boss::Patten3()
-{
-	if (count == 0)
-	{
-		move = true;
-		PattenSetPos();
-		SetEndMovePosX(center.x);
-		SetEndMovePosY(center.y);
-		SetSpeed(300.f);
-		SetStrike();
-		SetStrikeDir();
-		CheckEndPosTypeStrike();
-		pMaxCount = 200;
-		pCount = 0;
-		pDelay = 0.001f;
-	}
-	else if (count == 1)
-	{
-		PoseTrue();
-		SetdelayTime(1.5f);
-		if (pCount < pMaxCount && pDelay < 0.f)
-		{
-			Fire2();
-			pCount++;
-			pDelay = 0.001f;
-		}
-		TimeOut();
-	}
-	else if (count == 2)
-	{
-		SetdelayTime(0.1f);
-		pMaxCount = 200;
-		pCount = 0;
-		pDelay = 0.001f;
-		TimeOut();
-	}
-	else if (count == 3)
-	{
-		PoseTrue();
-		SetdelayTime(1.5f);
-		if (pCount < pMaxCount && pDelay < 0.f)
-		{
-			Fire2();
-			pCount++;
-			pDelay = 0.001f;
-		}
-		TimeOut();
-	}
-	else if (count == 4)
-	{
-		SetdelayTime(0.1f);
-		pMaxCount = 200;
-		pCount = 0;
-		pDelay = 0.001f;
-		TimeOut();
-	}
-	else if (count == 5)
-	{
-		PoseTrue();
-		SetdelayTime(1.5f);
-		if (pCount < pMaxCount && pDelay < 0.f)
-		{
-			Fire2();
-			pCount++;
-			pDelay = 0.001f;
-		}
-		TimeOut();
-	}
-	else if (count == 6)
-	{
-		SetdelayTime(0.1f);
-		pMaxCount = 200;
-		pCount = 0;
-		pDelay = 0.001f;
-		TimeOut();
-	}
-	else if (count == 7)
-	{
-		PoseTrue();
-		SetdelayTime(1.5f);
-		if (pCount < pMaxCount && pDelay < 0.f)
-		{
-			Fire2();
-			pCount++;
-			pDelay = 0.001f;
-		}
-		TimeOut();
-	}
-	else if (count == 8)
-	{
-		PoseFalse();
-		SetdelayTime(3.f);
-		TimeOut();
-	}
-	else if (count == 9)
-	{
-		action = false;
-		count = 0;
-	}
-}
-void Boss::Patten4()
+void Boss::MovePatten3() // 중앙에서 원형으로 발사
 {
 	switch (count)
 	{
@@ -542,6 +630,46 @@ void Boss::Patten4()
 		move = true;
 		PattenSetPos();
 		SetEndMovePosX(center.x);
+		SetEndMovePosY(center.y-200.f);
+		SetSpeed(300.f);
+		SetStrike();
+		SetStrikeDir();
+		CheckEndPosTypeStrike();
+		pMaxCount = 15;
+		pCount = 0;
+		pDelay = 0.001f;
+		break;
+	case 1:
+		PoseTrue();
+		SetdelayTime(1.5f);
+		if (pCount < pMaxCount && pDelay < 0.f)
+		{
+			Fire2();
+			attack.play();
+			pCount++;
+			pDelay = 0.05f;
+		}
+		TimeOut();
+		break;
+	case 2:
+		PoseFalse();
+		SetdelayTime(1.f);
+		TimeOut();
+		break;
+	case 3:
+		action = false;
+		count = 0;
+		break;
+	}
+}
+void Boss::MovePatten4() // 상단 중간 좌 우 이동
+{
+	switch (count)
+	{
+	case 0:
+		move = true;
+		PattenSetPos();
+		SetEndMovePosX(center.x+200);
 		SetEndMovePosY(center.y - 200.f);
 		SetSpeed(300.f);
 		SetStrike();
@@ -556,6 +684,7 @@ void Boss::Patten4()
 		if (pCount < pMaxCount && pDelay < 0.f)
 		{
 			Fire3();
+			attack.play();
 			pCount++;
 			pDelay = 0.01f;
 		}
@@ -566,7 +695,7 @@ void Boss::Patten4()
 		break;
 	case 2:
 		move = true;
-		SetEndMovePosX(center.x-200.f);
+		SetEndMovePosX(center.x);
 		SetEndMovePosY(center.y - 200.f);
 		SetSpeed(700.f);
 		SetStrike();
@@ -580,6 +709,7 @@ void Boss::Patten4()
 		if (pCount < pMaxCount && pDelay < 0.f)
 		{
 			Fire3();
+			attack.play();
 			pCount++;
 			pDelay = 0.01f;
 		}
@@ -590,7 +720,7 @@ void Boss::Patten4()
 		break;
 	case 4:
 		move = true;
-		SetEndMovePosX(center.x + 200.f);
+		SetEndMovePosX(center.x - 200.f);
 		SetEndMovePosY(center.y - 200.f);
 		SetSpeed(700.f);
 		SetStrike();
@@ -604,6 +734,7 @@ void Boss::Patten4()
 		if (pCount < pMaxCount && pDelay < 0.f)
 		{
 			Fire3();
+			attack.play();
 			pCount++;
 			pDelay = 0.01f;
 		}
@@ -618,7 +749,7 @@ void Boss::Patten4()
 		break;
 	}
 }
-void Boss::Patten5()
+void Boss::MovePatten5() // 센터에서 사각형 패턴
 {
 	switch (count)
 	{
@@ -631,9 +762,9 @@ void Boss::Patten5()
 		SetStrike();
 		SetStrikeDir();
 		CheckEndPosTypeStrike();
-		pMaxCount = 100;
+		pMaxCount = 20;
 		pCount = 0;
-		pDelay = 0.001f;
+		pDelay = 0.01f;
 		break;
 
 	case 1:
@@ -641,8 +772,9 @@ void Boss::Patten5()
 		if (pCount < pMaxCount && pDelay < 0.f)
 		{
 			Fire4(pCount);
+			attack.play();
 			pCount++;
-			pDelay = 0.01f;
+			pDelay = 0.05f;
 		}
 		else if (pMaxCount <= pCount)
 		{
@@ -652,9 +784,9 @@ void Boss::Patten5()
 
 	case 2:
 		SetdelayTime(0.1f);
-		pMaxCount = 100;
+		pMaxCount = 20;
 		pCount = 0;
-		pDelay = 0.001f;
+		pDelay = 0.01f;
 		TimeOut();
 		break;
 
@@ -662,8 +794,9 @@ void Boss::Patten5()
 		if (pCount < pMaxCount && pDelay < 0.f)
 		{
 			Fire4(pCount);
+			attack.play();
 			pCount++;
-			pDelay = 0.01f;
+			pDelay = 0.05f;
 		}
 		else if (pMaxCount <= pCount)
 		{
@@ -673,9 +806,9 @@ void Boss::Patten5()
 
 	case 4:
 		SetdelayTime(0.1f);
-		pMaxCount = 100;
+		pMaxCount = 20;
 		pCount = 0;
-		pDelay = 0.001f;
+		pDelay = 0.01f;
 		TimeOut();
 		break;
 
@@ -683,8 +816,9 @@ void Boss::Patten5()
 		if (pCount < pMaxCount && pDelay < 0.f)
 		{
 			Fire4(pCount);
+			attack.play();
 			pCount++;
-			pDelay = 0.01f;
+			pDelay = 0.05f;
 		}
 		else if (pMaxCount <= pCount)
 		{
@@ -694,9 +828,9 @@ void Boss::Patten5()
 
 	case 6:
 		SetdelayTime(0.1f);
-		pMaxCount = 100;
+		pMaxCount = 20;
 		pCount = 0;
-		pDelay = 0.001f;
+		pDelay = 0.01f;
 		TimeOut();
 		break;
 
@@ -704,8 +838,9 @@ void Boss::Patten5()
 		if (pCount < pMaxCount && pDelay < 0.f)
 		{
 			Fire4(pCount);
+			attack.play();
 			pCount++;
-			pDelay = 0.01f;
+			pDelay = 0.05f;
 		}
 		else if (pMaxCount <= pCount)
 		{
@@ -725,54 +860,219 @@ void Boss::Patten5()
 		break;
 	}
 }
+void Boss::MovePatten6()
+{
+	switch (count)
+	{
+	case 0:
+		move = true;
+		PattenSetPos();
+		SetEndMovePosX(center.x + 200.f);
+		SetEndMovePosY(center.y - 200.f);
+		SetSpeed(300.f);
+		SetStrike();
+		SetStrikeDir();
+		CheckEndPosTypeStrike();
+		pMaxCount = 20;
+		pCount = 0;
+		pDelay = 0.01f;
+		break;
+	case 1:
+		move = true;
+		SetMiddleMovePosX(center.x);
+		SetMiddleMovePosY(center.y);
+		SetEndMovePosX(center.x - 300.f);
+		SetEndMovePosY(center.y - 250.f);
+		SetDirX(-1.f);
+		SetSpeed(0.5f);
+		if (pCount < pMaxCount && pDelay < 0.f)
+		{
+			Fire5(pCount);
+			attack.play();
+			pCount++;
+			pDelay = 0.2f;
+		}
+		SetCurve();
+		CheckEndPosTypeCurve();
+		break;
+	case 2:
+		action = false;
+		count = 0;
+		break;
+	}
+}
+void Boss::MovePatten7()
+{
+	switch (count)
+	{
+	case 0:
+		move = true;
+		PattenSetPos();
+		SetEndMovePosX(center.x - 200.f);
+		SetEndMovePosY(center.y - 200.f);
+		SetSpeed(300.f);
+		SetStrike();
+		SetStrikeDir();
+		CheckEndPosTypeStrike();
+		pMaxCount = 20;
+		pCount = 0;
+		pDelay = 0.01f;
+		break;
+	case 1:
+		move = true;
+		SetMiddleMovePosX(center.x);
+		SetMiddleMovePosY(center.y);
+		SetEndMovePosX(center.x + 300.f);
+		SetEndMovePosY(center.y - 250.f);
+		SetDirX(1.f);
+		SetSpeed(0.5f);
+		if (pCount < pMaxCount && pDelay < 0.f)
+		{
+			Fire6(pCount);
+			attack.play();
+			pCount++;
+			pDelay = 0.2f;
+		}
+		SetCurve();
+		CheckEndPosTypeCurve();
+		break;
+	case 2:
+		action = false;
+		count = 0;
+		break;
+	}
+}
 
-void Boss::CheckEndPosTypeCurve()
+// 2 Phase
+void Boss::MovePatten8()
 {
-	if (position == endMovePos && move)
+	switch (count)
 	{
-		move = false;
-		speed = 0.f;
-		startMovePos = endMovePos;
-		pattenActive = false;
-		count++;
-		timer = 0;
+	case 0:
+		move = true;
+		PattenSetPos();
+		SetEndMovePosX(center.x - 200.f);
+		SetEndMovePosY(center.y - 200.f);
+		SetSpeed(300.f);
+		SetStrike();
+		SetStrikeDir();
+		CheckEndPosTypeStrike();
+		pMaxCount = 15;
+		pCount = 0;
+		pDelay = 0.001f;
+		break;
+	case 1:
+		PoseTrue();
+		SetdelayTime(1.5f);
+		if (pCount < pMaxCount && pDelay < 0.f)
+		{
+			Fire2();
+			attack.play();
+			pCount++;
+			pDelay = 0.05f;
+		}
+		TimeOut();
+		break;
+	case 2:
+		PoseFalse();
+		SetdelayTime(1.f);
+		TimeOut();
+		break;
+	case 3:
+		action = false;
+		count = 0;
+		break;
 	}
 }
-void Boss::CheckEndPosTypeStrike()
+void Boss::MovePatten9()
 {
-	length = Utils::Distance(position, endMovePos);
-	if (length <= 10.f)
+	switch (count)
 	{
-		move = false;
-		speed = 0.f;
-		position = endMovePos;
-		startMovePos = endMovePos;
-		pattenActive = false;
-		count++;
-		timer = 0;
+	case 0:
+		move = true;
+		PattenSetPos();
+		SetEndMovePosX(center.x + 200.f);
+		SetEndMovePosY(center.y - 200.f);
+		SetSpeed(300.f);
+		SetStrike();
+		SetStrikeDir();
+		CheckEndPosTypeStrike();
+		pMaxCount = 15;
+		pCount = 0;
+		pDelay = 0.001f;
+		break;
+	case 1:
+		PoseTrue();
+		SetdelayTime(1.5f);
+		if (pCount < pMaxCount && pDelay < 0.f)
+		{
+			Fire2();
+			attack.play();
+			pCount++;
+			pDelay = 0.05f;
+		}
+		TimeOut();
+		break;
+	case 2:
+		PoseFalse();
+		SetdelayTime(1.f);
+		TimeOut();
+		break;
+	case 3:
+		action = false;
+		count = 0;
+		break;
 	}
 }
-void Boss::SetStrikeDir()
+void Boss::MovePatten10()
 {
-	dir = Utils::Normalize(endMovePos-startMovePos);
-}
-void Boss::PattenSetPos()
-{
-	SetStartMovePosX(position.x);
-	SetStartMovePosY(position.y);
-}
-void Boss::SetdelayTime(float t)
-{
-	if (!delay)
+	switch (count)
 	{
-		delay = true;
-		delayTime = t;
+	case 0:
+		move = true;
+		PattenSetPos();
+		SetEndMovePosX(center.x);
+		SetEndMovePosY(center.y);
+		SetSpeed(300.f);
+		SetStrike();
+		SetStrikeDir();
+		CheckEndPosTypeStrike();
+		pMaxCount = 15;
+		pCount = 0;
+		pDelay = 0.25f;
+		break;
+	case 1:
+		PoseTrue();
+		SetdelayTime(1.5f);
+		if (pCount < pMaxCount && pDelay < 0.f)
+		{
+			if ((pCount % 2) == 0)
+			{
+				Fire7();
+			}
+			else if((pCount %2)!=0)
+			{
+				Fire8();
+			}
+			attack.play();
+			pCount++;
+			pDelay = 0.25f;
+		}
+		else if (pCount >= pMaxCount)
+		{
+			CountUp();
+		}
+		break;
+	case 2:
+		PoseFalse();
+		SetdelayTime(1.f);
+		TimeOut();
+		break;
+	case 3:
+		action = false;
+		count = 0;
+		break;
 	}
-}
-float Boss::GetHitBox()
-{
-	return this->hitbox->GetRaidus();
 }
 
-//gameViewSize.width = 914.5f;
-//gameViewSize.height = 640.f;
+

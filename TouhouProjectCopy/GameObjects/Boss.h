@@ -2,8 +2,8 @@
 #include "SpriteGo.h"
 #include "AnimationController.h"
 #include "HitboxGo.h"
+#include "Player.h"
 
-class Player;
 class Bullet;
 
 class Boss : public SpriteGo
@@ -21,9 +21,12 @@ protected:
 	float hp;
 
 	float speed = 600.f;
-	float timer = 0.f;
+	float bezierTimer = 0.f;
 	float length = 0.f;
 	float delayTime = 0.f;
+
+	int actionNum = 0;
+	int count;
 
 	int pCount;
 	int pMaxCount;
@@ -36,19 +39,19 @@ protected:
 	bool bossPrivatePose = false;
 	bool delay = false;
 	bool action = false;
-	int actionNum = 0;
-	//시험용
-	int count;
-	//코드
+	bool phase = false;
+
 	std::vector<float>* bossPatten;
 
 	sf::FloatRect gameView;
 	sf::Vector2f center;
 	sf::Sound hit;
+	sf::Sound attack;
 
 	Bullet* bullet;
 	Player* player;
 	HitboxGo* hitbox;
+	SpriteGo* phaseEffect;
 
 	ObjectPool<HitboxGo>* pool = nullptr;
 public:
@@ -62,7 +65,7 @@ public:
 	virtual void Update(float dt) override;
 
 
-	void SetHitBoxPool(ObjectPool<HitboxGo>* hitBoxPool);
+	void SetHitBoxPool(ObjectPool<HitboxGo>* hitBoxPool){ this->pool = hitBoxPool; }
 
 	void SetGameView(sf::FloatRect size)
 	{
@@ -71,22 +74,59 @@ public:
 		center.y = gameView.top + gameView.height / 2;
 	}
 
-	void SetTargetPos();
-	void SetPlayer(Player* player);
+	void SetAction(bool select) { action = select; }
+	void SetTargetPos(){ targetPos = player->GetPosition(); }
+	void SetPlayer(Player* player){ this->player = player; }
 	void SetHitBox(HitboxGo* hitbox) { this->hitbox = hitbox; }
-	void HitBoxPos() { hitbox->SetPosition(position); }
+	void SetPhaseEffect(SpriteGo* effect) { this->phaseEffect = effect; }
+	void ActiveHitbox(bool setting) { if(this->hitbox!=nullptr)this->hitbox->SetActive(setting); }
+	float GetHitBox() { return this->hitbox->GetRaidus(); }
+	void BossDamage(float damage) {
+		hit.play();
+		if (hp > 0)hp -= damage;
+		if (hp <= 0)hp = 0.f;
+	}
+	void SetPhase(bool change) { phase = change; }
+	bool GetPhase() { return phase; }
+	float GetBossHp() { return hp; }
+	float GetBossMaxHp() { return maxHp; }
+	void ResetHP() { hp = maxHp; }
+	void SetHP(float hp) { this->hp = hp; }
+	void SetPhaseEffect(bool control) { phaseEffect->SetActive(control); }
+	
+	void FollowPos() {
+		hitbox->SetPosition(position);
+		phaseEffect->SetPosition(position);
+	}
+
+	void Move();
+
+	sf::Vector2f BezierMove(const sf::Vector2f& pos0, const sf::Vector2f& pos1, const sf::Vector2f& pos2, float moveT);
+
+
+	//BulletFire
 	void Fire();
 	void Fire2();
 	void Fire3();
 	void Fire4(int c);
-	void Move();
-	sf::Vector2f BezierMove(const sf::Vector2f& pos0, const sf::Vector2f& pos1, const sf::Vector2f& pos2, float moveT);
+	void Fire5(int c);
+	void Fire6(int c);
+	void Fire7();
+	void Fire8();
 
-	void Patten1();
-	void Patten2();
-	void Patten3();
-	void Patten4();
-	void Patten5();
+
+	//MovePatten
+	void MovePatten1();
+	void MovePatten2();
+	void MovePatten3();
+	void MovePatten4();
+	void MovePatten5();
+	void MovePatten6();
+	void MovePatten7();
+	void MovePatten8();
+	void MovePatten9();
+	void MovePatten10();
+
 
 	//패턴 설정 값
 	void SetStartMovePosX(float x) { this->startMovePos.x = x; };
@@ -109,7 +149,7 @@ public:
 	void PoseFalse() { if (bossPrivatePose) this->bossPrivatePose = false; }
 	void CheckEndPosTypeCurve();
 	void CheckEndPosTypeStrike();
-	void SetStrikeDir();
+	void SetStrikeDir(){ dir = Utils::Normalize(endMovePos - startMovePos); }
 	void PattenSetPos();
 	void SetdelayTime(float t);
 	void TimeOut() {
@@ -120,15 +160,5 @@ public:
 		}
 	}
 	void CountUp() { this->count++; }
-	
 
-	float GetHitBox();
-
-	void BossDamage(float damage) {
-		hit.play();
-		if (hp > 0)hp -= damage;
-		else if (hp < 0)hp = 0.f;
-	}
-	float GetBossHp() { return hp; }
-	float GetBossMaxHp() { return maxHp; }
 };

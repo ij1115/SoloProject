@@ -7,8 +7,6 @@
 #include "SceneGame.h"
 #include "SceneMgr.h"
 #include "Bullet.h"
-#include "HitboxGo.h"
-
 
 
 void Player::Init()
@@ -28,23 +26,20 @@ void Player::Reset()
 {
 	SpriteGo::Reset();
 
+	Revive();
 
-	SetPosition(gameView.left+gameView.width/2, gameView.top + gameView.height + 50.f);
-	dir = { 0.f,-1.f };
 	animation.Play("PlayerIdle");
 	SetOrigin(origin);
-	speed = 100.f;
-	timer = attackDelay;
+	Immortal->sprite.setTexture(*RESOURCE_MGR.GetTexture("graphics/pl01c.png"));
+	playing = true;
+	phaseChange = false;
+	life = 2;
+	score = 0.f;
+	power = 0.f;
+
 	pDead.setBuffer(*RESOURCE_MGR.GetSoundBuffer("sound/se_pldead00.wav"));
 	bFire.setBuffer(*RESOURCE_MGR.GetSoundBuffer("sound/se_graze.wav"));
 	bFire.setVolume(20);
-	Immortal->sprite.setTexture(*RESOURCE_MGR.GetTexture("graphics/pl01c.png"));
-	control = true;
-	hitDelay = true;
-	grazeMode = false;
-	graze->sortLayer = -2;
-	hitbox->sortLayer = -2;
-
 }
 
 void Player::Release()
@@ -57,17 +52,15 @@ void Player::Release()
 
 void Player::Update(float dt)
 {
-
 		SpriteGo::Update(dt);
-
 		if (playing)
 		{
-
 			animation.Update(dt);
+
 			FollwoPos();
 			SetPosition(position + dir * speed * dt);
 
-			if (hitDelay)
+			if (hitDelay) // Immortal Time
 			{
 				hitTimer -= dt;
 				Immortal->sprite.rotate(360 * dt);
@@ -86,6 +79,7 @@ void Player::Update(float dt)
 				control = false;
 				speed = 500.f;
 			}
+
 			else if (!control)
 			{
 				dir.x = INPUT_MGR.GetAxisRaw(Axis::Horizontal);
@@ -95,11 +89,10 @@ void Player::Update(float dt)
 
 				this->timer -= dt;
 
-				if (this->timer < 0.f && INPUT_MGR.GetKey(sf::Keyboard::Z))
+				if (this->timer < 0.f && INPUT_MGR.GetKey(sf::Keyboard::Z)&&!phaseChange)
 				{
 					this->timer = attackDelay;
 
-					//std::cout << "attack" << std::endl;
 					Fire();
 					bFire.play();
 				}
@@ -112,8 +105,8 @@ void Player::Update(float dt)
 					graze->sortLayer = 0;
 					hitbox->sortLayer = 5;
 					grazeMode = true;
+					graze->sprite.rotate(720 * dt);
 				}
-
 				if (INPUT_MGR.GetKeyUp(sf::Keyboard::LShift))
 				{
 					speed = 500.f;
@@ -125,9 +118,17 @@ void Player::Update(float dt)
 		}
 }
 
-void Player::SetHitBoxPool(ObjectPool<HitboxGo>* hitBoxPool)
+void Player::Revive()
 {
-	this->pool = hitBoxPool;
+	SetPosition(gameView.left + gameView.width / 2, gameView.top + gameView.height + 50.f);
+	dir = { 0.f,-1.f };
+	speed = 100.f;
+	timer = attackDelay;
+	control = true;
+	hitDelay = true;
+	grazeMode = false;
+	graze->sortLayer = -2;
+	hitbox->sortLayer = -2;
 }
 
 void Player::MovingLimit()
@@ -226,14 +227,6 @@ void Player::FollwoPos()
 	grazeBox->SetPosition(position);
 	Immortal->SetPosition(position);
 }
-float Player::GetHitBox()
-{
-	return this->hitbox->GetRaidus();
-}
-float Player::GetGrazeBox()
-{
-	return this->grazeBox->GetRaidus();
-}
 
 void Player::PlayerDead()
 {
@@ -241,7 +234,12 @@ void Player::PlayerDead()
 
 	if (life>0)
 	{
-		Reset();
+		power -= 1.0f;
+		if (power <= 0.f)
+		{
+			power = 0.f;
+		}
+		Revive();
 		hitTimer = 5.f;
 		Immortal->SetActive(true);
 	}
@@ -260,9 +258,7 @@ void Player::BulletPower_1()
 		bullet->Init();
 		bullet->Reset();
 		bullet->SetDir({ 0.f, -1.f });
-		bullet->BulletStatPos({ position.x,position.y - 25.f });
-		bullet->SetDelCount(0);
-		bullet->SetRoCount(0);
+		bullet->BulletStartPos({ position.x,position.y - 25.f });
 		bullet->SetSpeed(1000.f);
 		sceneGame->AddGo(bullet);
 	}
@@ -279,9 +275,7 @@ void Player::BulletPower_2(sf::Vector2f pos)
 		bullet->SetBulletType((Bullet::Types)1);
 		bullet->Init();
 		bullet->Reset();
-		bullet->BulletStatPos(pos);
-		bullet->SetDelCount(0);
-		bullet->SetRoCount(0);
+		bullet->BulletStartPos(pos);
 		bullet->SetSpeed(1500.f);
 		sceneGame->AddGo(bullet);
 	}
@@ -299,9 +293,7 @@ void Player::BulletPower_3()
 		bullet->Init();
 		bullet->Reset();
 		bullet->SetDir({ 0.f, -1.f });
-		bullet->BulletStatPos({ position.x-25.f,position.y - 25.f });
-		bullet->SetDelCount(0);
-		bullet->SetRoCount(0);
+		bullet->BulletStartPos({ position.x-25.f,position.y - 25.f });
 		bullet->SetSpeed(1000.f);
 		sceneGame->AddGo(bullet);
 	}
@@ -319,10 +311,9 @@ void Player::BulletPower_4()
 		bullet->Init();
 		bullet->Reset();
 		bullet->SetDir({ 0.f, -1.f });
-		bullet->BulletStatPos({ position.x+25.f,position.y - 25.f });
-		bullet->SetDelCount(0);
-		bullet->SetRoCount(0);
+		bullet->BulletStartPos({ position.x+25.f,position.y - 25.f });
 		bullet->SetSpeed(1000.f);
 		sceneGame->AddGo(bullet);
 	}
 }
+

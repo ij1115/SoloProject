@@ -1,7 +1,7 @@
 #pragma once
 #include "Scene.h"
 #include "ObjectPool.h"
-
+#include "AnimationController.h"
 class SpriteGo;
 class Player;
 class Bullet;
@@ -10,19 +10,24 @@ class Boss;
 class ShapeGo;
 class BulletEffect;
 
+
 class SceneGame : public Scene
 {
 protected:
+	AnimationController endingAni;
+
 	Player* player;
 	Boss* boss;
-	HitboxGo* pHitbox;
-	HitboxGo* bHitbox;
-	HitboxGo* grazeBox;
-	SpriteGo* graze;
-	SpriteGo* immortal;
+
 	SpriteGo* backGround;
+	SpriteGo* ending;
+
+	sf::Vector2f backGroundScale = { 3.f,3.f };
 
 	sf::Sound gameMusic;
+	sf::Sound se_Sound;
+	sf::Sound se_pickSound;
+	sf::Sound se_pause;
 
 	sf::FloatRect gameViewSize;
 
@@ -31,48 +36,47 @@ protected:
 	ObjectPool<BulletEffect> poolEffect;
 
 	bool playing = false;
+	bool phaseChange = false;
+	bool scaleChange = false;
+	bool pause = false;
+	bool realyYN = false;
+	bool clear = false;
+	bool endingScene = false;
 
 	float timer = 0.f;
+	float changeClearTime = 1.0f;
+	float changeTimer = 0.f;
 	int score;
 
-	int num1;
-	int num2;
-	int num3;
-	int num4;
-	int num5;
-
 	//Ui
-	
-		SpriteGo* bossName;
 		ShapeGo* bossHp;
 
 		SpriteGo* bossClear;
 		SpriteGo* clearFailed;
 
-		SpriteGo* life1;
-		SpriteGo* life2;
+		std::vector<SpriteGo*> life;
 
 		std::vector<sf::IntRect> font;
+		std::vector<SpriteGo*> numberUiFont;
+		//0~4 timer font
+		//5~9 score font
+		//10~14 power font
 
-		SpriteGo* timer1;
-		SpriteGo* timer2;
-		SpriteGo* timer3;
-		SpriteGo* timer4;
-		SpriteGo* timer5;
+		int pauseMenuSelect = 0;
+		int realySelect = 0;
 
-		SpriteGo* score1;
-		SpriteGo* score2;
-		SpriteGo* score3;
-		SpriteGo* score4;
-		SpriteGo* score5;
-
-		SpriteGo* power1;
-		SpriteGo* power2;
-		SpriteGo* power3;
-		SpriteGo* power4;
-		SpriteGo* power5;
+		ShapeGo* pauseBackGround;
+		std::vector<SpriteGo*> pauseUi;
+		// 0 pauseBar;
+		// 1 pauseMenu;
+		// 2 returnToGame;
+		// 3 returnToTitle;
+		// 4 giveUpToReplay;
+		// 5 realyBar;
+		// 6 realy;
+		// 7 yes;
+		// 8 no;
 	
-
 public:
 	SceneGame();
 	virtual ~SceneGame() override = default;
@@ -90,9 +94,14 @@ public:
 	template<class T>
 	void ClearPool(ObjectPool<T>& pool);
 
+	void Pause();
+	void PauseMenu(float dt);
+	void PhaseChange();
+
 	void TimerFont();
 	void PowerFont();
 	void ScoreFont();
+	void LifeFont();
 };
 
 template<class T>

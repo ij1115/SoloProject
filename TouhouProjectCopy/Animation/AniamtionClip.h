@@ -10,7 +10,7 @@ struct AnimationFrame
 {
 	std::string textureId;
 	sf::IntRect tecCoord;
-	std::function<void()> action;
+	//std::function<void()> action;
 };
 
 struct AnimationClip
