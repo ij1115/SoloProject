@@ -40,5 +40,16 @@ enum class SceneId
 	Count,
 };
 
+enum class UpdateState
+{
+	None,
+	Event,
+	Boss,
+	Play,
+	Ending,
+	Pause,
+	Dead,
+};
+
 #include "AniamtionClip.h"
 #include "PattenInfo.h"

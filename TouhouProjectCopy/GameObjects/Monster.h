@@ -6,18 +6,17 @@
 
 class Bullet;
 
-class Boss : public SpriteGo
+class Monster : public SpriteGo
 {
 protected:
-	AnimationController bossAnimation;
+	AnimationController monsterAnimation;
 
 	sf::Vector2f startMovePos;
 	sf::Vector2f endMovePos;
 	sf::Vector2f middleMovePos;
 	sf::Vector2f targetPos;
-	sf::Vector2f dir;
 
-	float maxHp=10000.f;
+	float maxHp = 20.f;
 	float hp;
 
 	float speed = 600.f;
@@ -39,9 +38,8 @@ protected:
 	bool bossPrivatePose = false;
 	bool delay = false;
 	bool action = false;
-	bool phase = false;
 
-	std::vector<float>* bossPatten;
+	std::vector<float>* monsterPatten;
 
 	sf::FloatRect gameView;
 	sf::Vector2f center;
@@ -50,22 +48,25 @@ protected:
 
 	Bullet* bullet;
 	Player* player;
-	HitboxGo* hitbox;
-	SpriteGo* phaseEffect;
 
+	HitboxGo* hitbox;
+
+	ObjectPool<Monster>* poolMonster = nullptr;
 	ObjectPool<HitboxGo>* pool = nullptr;
 public:
-	Boss(const std::string& textureId = "", const std::string& n = "")
+	Monster(const std::string& textureId = "", const std::string& n = "")
 		: SpriteGo(textureId, n) {}
-	virtual ~Boss() override { Release(); };
+	virtual ~Monster() override { Release(); };
 
 	virtual void Init() override;
 	virtual void Reset() override;
 	virtual void Release() override;
 	virtual void Update(float dt) override;
 
+	void HitBoxSetting();
 
-	void SetHitBoxPool(ObjectPool<HitboxGo>* hitBoxPool){ this->pool = hitBoxPool; }
+	void SetPool(ObjectPool<Monster>* monsterPool) { this->poolMonster = monsterPool; }
+	void SetHitBoxPool(ObjectPool<HitboxGo>* hitBoxPool) { this->pool = hitBoxPool; }
 
 	void SetGameView(sf::FloatRect size)
 	{
@@ -73,37 +74,38 @@ public:
 		center.x = gameView.left + gameView.width / 2;
 		center.y = gameView.top + gameView.height / 2;
 	}
+	void Destroy();
 
 	void SetAction(bool select) { action = select; }
-	void SetTargetPos(){ targetPos = player->GetPosition(); }
-	void SetPlayer(Player* player){ this->player = player; }
+	void SetStartPos(sf::Vector2f pos) { startMovePos = pos; }
+	void SetMiddlePos(sf::Vector2f pos) { middleMovePos = pos; }
+	void SetEndPos(sf::Vector2f pos) { endMovePos = pos; }
+
+	void SetTargetPos() { targetPos = player->GetPosition(); }
+	void SetPlayer(Player* player) { this->player = player; }
 	void SetHitBox(HitboxGo* hitbox) { this->hitbox = hitbox; }
-	void SetPhaseEffect(SpriteGo* effect) { this->phaseEffect = effect; }
-	void ActiveHitbox(bool setting) { if(this->hitbox!=nullptr)this->hitbox->SetActive(setting); }
+	void ActiveHitbox(bool setting) { if (this->hitbox != nullptr)this->hitbox->SetActive(setting); }
 	float GetHitBox() { return this->hitbox->GetRaidus(); }
-	void BossDamage(float damage) {
+	void MonsterDamage(float damage) {
 		hit.play();
 		if (hp > 0)hp -= damage;
-		if (hp <= 0)hp = 0.f;
+		if (hp <= 0)
+		{
+			player->PlusScore(20);
+			Destroy();
+		}
 	}
-	void SetPhase(bool change) { phase = change; }
-	bool GetPhase() { return phase; }
 	float GetBossHp() { return hp; }
 	float GetBossMaxHp() { return maxHp; }
 	void ResetHP() { hp = maxHp; }
 	void SetHP(float hp) { this->hp = hp; }
-	void SetPhaseEffect(bool control) { phaseEffect->SetActive(control); }
-	
+
 	void FollowPos() {
 		hitbox->SetPosition(position);
-		phaseEffect->SetPosition(position);
 	}
-
-	void Move();
 
 	sf::Vector2f BezierMove(const sf::Vector2f& pos0, const sf::Vector2f& pos1, const sf::Vector2f& pos2, float moveT);
 
-	void Escape();
 
 	//BulletFire
 	void Fire();
@@ -115,20 +117,6 @@ public:
 	void Fire7();
 	void Fire8();
 
-
-	//MovePatten
-	void MovePatten1();
-	void MovePatten2();
-	void MovePatten3();
-	void MovePatten4();
-	void MovePatten5();
-	void MovePatten6();
-	void MovePatten7();
-	void MovePatten8();
-	void MovePatten9();
-	void MovePatten10();
-
-
 	//패턴 설정 값
 	void SetStartMovePosX(float x) { this->startMovePos.x = x; };
 	void SetStartMovePosY(float y) { this->startMovePos.y = y; };
@@ -136,7 +124,6 @@ public:
 	void SetMiddleMovePosY(float y) { this->middleMovePos.y = y; };
 	void SetEndMovePosX(float x) { this->endMovePos.x = x; };
 	void SetEndMovePosY(float y) { this->endMovePos.y = y; };
-	void SetDirX(float x) { this->dir.x = x; };
 	void SetSpeed(float s) { this->speed = s; }
 	void SetCurve() {
 		this->curve = true;
@@ -148,10 +135,6 @@ public:
 	}
 	void PoseTrue() { if (!bossPrivatePose) this->bossPrivatePose = true; }
 	void PoseFalse() { if (bossPrivatePose) this->bossPrivatePose = false; }
-	void CheckEndPosTypeCurve();
-	void CheckEndPosTypeStrike();
-	void SetStrikeDir(){ dir = Utils::Normalize(endMovePos - startMovePos); }
-	void PattenSetPos();
 	void SetdelayTime(float t);
 	void TimeOut() {
 		if (delayTime < 0.f && delay)
@@ -163,3 +146,4 @@ public:
 	void CountUp() { this->count++; }
 
 };
+

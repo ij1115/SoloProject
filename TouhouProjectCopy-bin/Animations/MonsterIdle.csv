@@ -1,0 +1,9 @@
+ID,FPS,LOOPTYPE,,
+MonsterIdle,10,1,,
+,,,,
+TEXTURE ID,LEFT,TOP,WIDTH,HEIGHT
+graphics/enemy.png,1,34,30,27
+graphics/enemy.png,34,34,28,28
+graphics/enemy.png,65,34,29,27
+graphics/enemy.png,97,34,30,27
+graphics/enemy.png,129,34,30,27

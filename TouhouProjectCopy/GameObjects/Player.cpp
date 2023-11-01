@@ -53,6 +53,7 @@ void Player::Release()
 void Player::Update(float dt)
 {
 		SpriteGo::Update(dt);
+
 		if (playing)
 		{
 			animation.Update(dt);
@@ -255,7 +256,6 @@ void Player::BulletPower_1()
 		sceneGame->GetBullet(bullet);
 		bullet->SetUser((Bullet::User)0);
 		bullet->SetBulletType((Bullet::Types)0);
-		bullet->Init();
 		bullet->Reset();
 		bullet->SetDir({ 0.f, -1.f });
 		bullet->BulletStartPos({ position.x,position.y - 25.f });
@@ -266,6 +266,7 @@ void Player::BulletPower_1()
 
 void Player::BulletPower_2(sf::Vector2f pos)
 {
+	
 	Scene* scene = SCENE_MGR.GetCurrScene();
 	SceneGame* sceneGame = dynamic_cast<SceneGame*>(scene);
 	if (sceneGame != nullptr)
@@ -273,11 +274,11 @@ void Player::BulletPower_2(sf::Vector2f pos)
 		sceneGame->GetBullet(bullet);
 		bullet->SetUser((Bullet::User)0);
 		bullet->SetBulletType((Bullet::Types)1);
-		bullet->Init();
 		bullet->Reset();
 		bullet->BulletStartPos(pos);
 		bullet->SetSpeed(1500.f);
 		sceneGame->AddGo(bullet);
+		bullet->FindMob();
 	}
 }
 
@@ -290,7 +291,6 @@ void Player::BulletPower_3()
 		sceneGame->GetBullet(bullet);
 		bullet->SetUser((Bullet::User)0);
 		bullet->SetBulletType((Bullet::Types)0);
-		bullet->Init();
 		bullet->Reset();
 		bullet->SetDir({ 0.f, -1.f });
 		bullet->BulletStartPos({ position.x-25.f,position.y - 25.f });
@@ -308,7 +308,6 @@ void Player::BulletPower_4()
 		sceneGame->GetBullet(bullet);
 		bullet->SetUser((Bullet::User)0);
 		bullet->SetBulletType((Bullet::Types)0);
-		bullet->Init();
 		bullet->Reset();
 		bullet->SetDir({ 0.f, -1.f });
 		bullet->BulletStartPos({ position.x+25.f,position.y - 25.f });

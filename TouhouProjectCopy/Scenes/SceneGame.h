@@ -9,11 +9,13 @@ class HitboxGo;
 class Boss;
 class ShapeGo;
 class BulletEffect;
-
+class Monster;
 
 class SceneGame : public Scene
 {
 protected:
+	UpdateState currentUpdate;
+
 	AnimationController endingAni;
 
 	Player* player;
@@ -34,6 +36,7 @@ protected:
 	ObjectPool<Bullet> poolBullet;
 	ObjectPool<HitboxGo> poolHitBox;
 	ObjectPool<BulletEffect> poolEffect;
+	ObjectPool<Monster> poolMonster;
 
 	bool playing = false;
 	bool phaseChange = false;
@@ -43,6 +46,13 @@ protected:
 	bool clear = false;
 	bool endingScene = false;
 
+	bool flip = true;
+
+	bool spawn = true;
+
+	float spawnTimer;
+
+
 	float timer = 0.f;
 	float changeClearTime = 1.0f;
 	float changeTimer = 0.f;
@@ -50,7 +60,7 @@ protected:
 
 	//Ui
 		ShapeGo* bossHp;
-
+		SpriteGo* bossName;
 		SpriteGo* bossClear;
 		SpriteGo* clearFailed;
 
@@ -93,6 +103,13 @@ public:
 	void GetBullet(Bullet*& bullet);
 	template<class T>
 	void ClearPool(ObjectPool<T>& pool);
+
+	void PlayUpdate(float dt);
+	void PauseUpdate(float dt);
+	void EventUpdate(float dt);
+	void BossUpdate(float dt);
+	void EndingUpdate(float dt);
+	void DeadUpdate(float dt);
 
 	void Pause();
 	void PauseMenu(float dt);

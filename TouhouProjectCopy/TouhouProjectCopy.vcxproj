@@ -176,6 +176,7 @@
     <ClCompile Include="GameObjects\Player.cpp" />
     <ClCompile Include="DataTables\PattenInfo.cpp" />
     <ClCompile Include="DataTables\PattenMgr.cpp" />
+    <ClCompile Include="GameObjects\Monster.cpp" />
     <ClCompile Include="Scenes\Scene.cpp" />
     <ClCompile Include="Scenes\SceneGame.cpp" />
     <ClCompile Include="Framework\SceneMgr.cpp" />
@@ -183,7 +184,7 @@
     <ClCompile Include="Global\Variables.cpp" />
     <ClCompile Include="GameObjects\HitboxGo.cpp" />
     <ClCompile Include="GameObjects\ShapeGo.cpp" />
-    <ClCompile Include="SceneTitle.cpp" />
+    <ClCompile Include="Scenes\SceneTitle.cpp" />
     <ClCompile Include="UiButton.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -207,6 +208,7 @@
     <ClInclude Include="GameObjects\Player.h" />
     <ClInclude Include="DataTables\PattenInfo.h" />
     <ClInclude Include="DataTables\PattenMgr.h" />
+    <ClInclude Include="GameObjects\Monster.h" />
     <ClInclude Include="Scenes\Scene.h" />
     <ClInclude Include="Scenes\SceneGame.h" />
     <ClInclude Include="Framework\SceneMgr.h" />
@@ -214,7 +216,7 @@
     <ClInclude Include="GameObjects\SpriteGo.h" />
     <ClInclude Include="GameObjects\HitboxGo.h" />
     <ClInclude Include="GameObjects\ShapeGo.h" />
-    <ClInclude Include="SceneTitle.h" />
+    <ClInclude Include="Scenes\SceneTitle.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="Global\Variables.h" />
     <ClInclude Include="UiButton.h" />

@@ -196,6 +196,30 @@ sf::Vector2f Boss::BezierMove(const sf::Vector2f& pos0, const sf::Vector2f& pos1
 	return p;
 }
 
+void Boss::Escape()
+{
+	if (position.x < gameView.left + 15.f)
+	{
+		action = false;
+		count = 0;
+	}
+	else if (position.x > gameView.left + gameView.width - 15.f)
+	{
+		action = false;
+		count = 0;
+	}
+	if (position.y > gameView.top + gameView.height - 25.f)
+	{
+		action = false;
+		count = 0;
+	}
+	else if (position.y < gameView.top + 25)
+	{
+		action = false;
+		count = 0;
+	}
+}
+
 void Boss::CheckEndPosTypeCurve()
 {
 	if (position == endMovePos && move)
@@ -221,6 +245,8 @@ void Boss::CheckEndPosTypeStrike()
 		count++;
 		bezierTimer = 0.f;
 	}
+
+	Escape();
 }
 
 void Boss::PattenSetPos()

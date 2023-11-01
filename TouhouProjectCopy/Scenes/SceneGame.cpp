@@ -12,6 +12,7 @@
 #include "ShapeGo.h"
 #include "Bullet.h"
 #include "BulletEffect.h"
+#include "Monster.h"
 
 SceneGame::SceneGame() : Scene(SceneId::Game)
 {
@@ -93,45 +94,50 @@ void SceneGame::Init()
 
 		//Timer Ui
 		{
-			SpriteGo* timer1 = (SpriteGo*)AddGo(new SpriteGo("graphics/ascii.png"));
+			SpriteGo* timer1 = (SpriteGo*)AddGo(new SpriteGo("graphics/ascii.png","timer1"));
 			timer1->sprite.setTextureRect(font[0]);
 			timer1->SetPosition(FRAMEWORK.GetWindowSize().x - 420.f, 70.f);
 			timer1->sprite.setScale(1.5f, 1.5f);
 			timer1->SetOrigin(Origins::BC);
 			timer1->sortLayer = 103;
 			numberUiFont.push_back(timer1);
+			timer1->SetActive(false);
 
-			SpriteGo* timer2 = (SpriteGo*)AddGo(new SpriteGo("graphics/ascii.png"));
+			SpriteGo* timer2 = (SpriteGo*)AddGo(new SpriteGo("graphics/ascii.png", "timer2"));
 			timer2->sprite.setTextureRect(font[1]);
 			timer2->SetPosition(FRAMEWORK.GetWindowSize().x - 400.f, 70.f);
 			timer2->sprite.setScale(1.5f, 1.5f);
 			timer2->SetOrigin(Origins::BC);
 			timer2->sortLayer = 103;
 			numberUiFont.push_back(timer2);
+			timer2->SetActive(false);
 
-			SpriteGo* timer3 = (SpriteGo*)AddGo(new SpriteGo("graphics/ascii.png"));
+			SpriteGo* timer3 = (SpriteGo*)AddGo(new SpriteGo("graphics/ascii.png", "timer3"));
 			timer3->sprite.setTextureRect(font[11]);
 			timer3->SetPosition(FRAMEWORK.GetWindowSize().x - 370.f, 70.f);
 			timer3->sprite.setScale(1.5f, 1.5f);
 			timer3->SetOrigin(Origins::BC);
 			timer3->sortLayer = 103;
 			numberUiFont.push_back(timer3);
+			timer3->SetActive(false);
 
-			SpriteGo* timer4 = (SpriteGo*)AddGo(new SpriteGo("graphics/ascii.png"));
+			SpriteGo* timer4 = (SpriteGo*)AddGo(new SpriteGo("graphics/ascii.png", "timer4"));
 			timer4->sprite.setTextureRect(font[1]);
 			timer4->SetPosition(FRAMEWORK.GetWindowSize().x - 360.f, 70.f);
 			timer4->sprite.setScale(1.f, 1.f);
 			timer4->SetOrigin(Origins::BC);
 			timer4->sortLayer = 103;
 			numberUiFont.push_back(timer4);
+			timer4->SetActive(false);
 
-			SpriteGo* timer5 = (SpriteGo*)AddGo(new SpriteGo("graphics/ascii.png"));
+			SpriteGo* timer5 = (SpriteGo*)AddGo(new SpriteGo("graphics/ascii.png", "timer5"));
 			timer5->sprite.setTextureRect(font[1]);
 			timer5->SetPosition(FRAMEWORK.GetWindowSize().x - 340.f, 70.f);
 			timer5->sprite.setScale(1.0f, 1.0f);
 			timer5->SetOrigin(Origins::BC);
 			timer5->sortLayer = 103;
 			numberUiFont.push_back(timer5);
+			timer5->SetActive(false);
 		}
 
 		//Score Ui
@@ -420,11 +426,13 @@ void SceneGame::Init()
 		phaseEffect->sortOrder = -1;
 		phaseEffect->SetActive(false);
 
-		SpriteGo* bossName = (SpriteGo*)AddGo(new SpriteGo("graphics/ename.png"));
+		bossName = (SpriteGo*)AddGo(new SpriteGo("graphics/ename.png"));
 		bossName->sprite.setTextureRect(sf::IntRect(0, 95, 69, 10));
 		bossName->SetPosition(41.f, 60.f);
 		bossName->sprite.setScale(2.f, 2.f);
 		bossName->sortLayer = 101;
+
+		bossName->SetActive(false);
 
 		boss = (Boss*)AddGo(new Boss());
 		boss->SetGameView(gameViewSize);
@@ -433,21 +441,41 @@ void SceneGame::Init()
 		boss->SetPhaseEffect(phaseEffect);
 		boss->sortLayer = 1;
 
+		boss->SetActive(false);
+
 		bossHp = (ShapeGo*)AddGo(new ShapeGo());
 		bossHp->SetPosition(41.f, 55.f);
 		bossHp->sortLayer = 101;
 		bossHp->SetOrigin(Origins::ML);
 
+		bossHp->SetActive(false);
+
+		poolMonster.OnCreate = [this](Monster* monster)
+		{
+			monster->SetPool(&poolMonster);
+			monster->SetHitBoxPool(&poolHitBox);
+			monster->SetPlayer(player);
+			monster->SetGameView(gameViewSize);
+		};
+		poolMonster.Init();
+
 		poolBullet.OnCreate = [this](Bullet* bullet)
 		{
 			bullet->SetPool(&poolBullet);
+			bullet->SetMonsterPool(&poolMonster);
 			bullet->SetGameView(gameViewSize);
 			bullet->SetHitBoxPool(&poolHitBox);
 			bullet->SetBoss(boss);
 			bullet->SetPlayer(player);
 			bullet->SetEffectPool(&poolEffect);
 		};
-		poolBullet.Init();
+		poolBullet.Init(400);
+
+		poolHitBox.OnCreate = [this](HitboxGo* hitbox)
+			{
+				hitbox->SetPool(&poolHitBox);
+			};
+		poolHitBox.Init();
 	
 
 	for (auto go : gameObjects)
@@ -461,6 +489,7 @@ void SceneGame::Release()
 	poolBullet.Release();
 	poolHitBox.Release();
 	poolEffect.Release();
+	poolMonster.Release();
 
 	for (auto uiFont : numberUiFont)
 	{
@@ -500,18 +529,47 @@ void SceneGame::Enter()
 
 	Pause();
 
-	timer = 90.00f;
+	timer = 120.00f;
 
 	for (auto playerlife : life)
 	{
 		playerlife->SetActive(true);
 	}
+	for (auto timer : numberUiFont)
+	{
+		if (timer->GetName() == "timer1")
+		{
+			timer->SetActive(false);
+		}
+		else if (timer->GetName() == "timer2")
+		{
+			timer->SetActive(false);
+		}
+		else if (timer->GetName() == "timer3")
+		{
+			timer->SetActive(false);
+		}
+		else if (timer->GetName() == "timer4")
+		{
+			timer->SetActive(false);
+		}
+		else if (timer->GetName() == "timer5")
+		{
+			timer->SetActive(false);
+		}
+	}
 
 	player->Reset();
 	boss->Reset();
+	boss->SetActive(false);
+	bossName->SetActive(false);
+	bossHp->SetActive(false);
 	ending->SetActive(false);
 	bossClear->SetActive(false);
 	clearFailed->SetActive(false);
+
+	spawn = true;
+	spawnTimer = 0.f;
 
 	se_Sound.setBuffer(*RESOURCE_MGR.GetSoundBuffer("sound/se_select00.wav"));
 	se_pickSound.setBuffer(*RESOURCE_MGR.GetSoundBuffer("sound/se_ok00.wav"));
@@ -531,6 +589,8 @@ void SceneGame::Enter()
 
 	endingAni.AddClip(*RESOURCE_MGR.GetAnimationClip("Animations/Ending.csv"));
 	endingAni.SetTarget(&ending->sprite);
+
+	currentUpdate = UpdateState::Play;
 }
 
 void SceneGame::Exit()
@@ -538,6 +598,7 @@ void SceneGame::Exit()
 	ClearPool(poolHitBox);
 	ClearPool(poolBullet);
 	ClearPool(poolEffect);
+	ClearPool(poolMonster);
 	player->Reset();
 	boss->Reset();
 	gameMusic.stop();
@@ -546,127 +607,59 @@ void SceneGame::Exit()
 
 void SceneGame::Update(float dt)
 {
-	if (!pause)
+	switch (currentUpdate)
 	{
-		Scene::Update(dt);
-		endingAni.Update(dt);
+	case UpdateState::Play:
+	{
+		PlayUpdate(dt);
+		break;
 	}
+
+	case UpdateState::Pause:
+	{
+		PauseUpdate(dt);
+		break;
+	}
+
+	case UpdateState::Dead:
+	{
+		DeadUpdate(dt);
+		break;
+	}
+
+	case UpdateState::Ending:
+	{
+		EndingUpdate(dt);
+		break;
+	}
+
+	case UpdateState::Event:
+	{
+		EventUpdate(dt);
+		break;
+	}
+	case UpdateState::Boss:
+		BossUpdate(dt);
+		break;
+	}
+
+	ScoreFont();
+	PowerFont();
+	LifeFont();
 
 	if (playing)
 	{
-		Pause();
-
-		if (INPUT_MGR.GetKeyDown(sf::Keyboard::Escape) && !realyYN)
+		if (INPUT_MGR.GetKeyDown(sf::Keyboard::Escape) && !realyYN && !pause)
 		{
 			if (!pause)
 			{
 				se_pause.play();
 			}
 			pause = !pause;
+			currentUpdate = UpdateState::Pause;
+			return;
 		}
-
-		PauseMenu(dt);
-
-		if(!phaseChange)
-		{
-			timer -= dt;
-
-			backGround->sprite.rotate(20 * dt);
-
-			PhaseChange();
-			
-			if (player->GetLife() < 1)
-			{
-				playing = false;
-				player->SetPlaying(playing);
-				clearFailed->SetActive(true);
-			}
-			else if (timer < 0.f)
-			{
-				playing = false;
-				player->SetPlaying(playing);
-				clearFailed->SetActive(true);
-			}
-
-			TimerFont();
-			ScoreFont();
-			PowerFont();
-			LifeFont();
-		}
-		else if (phaseChange)
-		{
-			timer = 90.f;
-
-			changeTimer += dt;
-			if (!scaleChange)
-			{
-				backGround->sprite.setColor(sf::Color(255, 255, 255, (1.f - (changeTimer / changeClearTime)) * 255));
-			}
-			else if (scaleChange)
-			{
-				boss->SetHP(boss->GetBossHp() + (changeTimer / changeClearTime) *
-					(boss->GetBossMaxHp() - boss->GetBossHp()));
-				backGround->sprite.setScale(backGround->sprite.getScale() +
-					(changeTimer / changeClearTime) * 
-					(backGroundScale - backGround->sprite.getScale()));
-			}
-			if (changeClearTime <=changeTimer)
-			{
-				if (!scaleChange)
-				{
-					scaleChange = true;
-					backGround->textureId = ("graphics/stage06c.png");
-					backGround->sprite.setTexture(*RESOURCE_MGR.GetTexture("graphics/stage06c.png"));
-					backGround->sprite.setColor(sf::Color(255, 255, 255, 255));
-					backGround->sprite.setTextureRect(sf::IntRect(0, 0, 512, 512));
-					backGround->sprite.setScale(7.f, 7.f);
-					backGround->SetOrigin(Origins::MC);
-
-					player->ActiveHitbox(true);
-					boss->ActiveHitbox(true);
-					player->ActiveGraze(true);
-					player->ActiveGrazebox(true);
-					boss->SetPhaseEffect(true);
-					changeTimer = 0.f;
-				}
-				else if (scaleChange)
-				{
-					gameMusic.setBuffer(*RESOURCE_MGR.GetSoundBuffer("sound/Nuclear_Fusion.wav"));
-					gameMusic.setLoop(true);
-					gameMusic.play();
-					gameMusic.setVolume(20);
-
-					phaseChange = false;
-					player->SetChangePhase(false);
-					boss->SetAction(false);
-				}
-			}
-		}
-	}
-	else if (!playing)
-	{
-		if (INPUT_MGR.GetKeyDown(sf::Keyboard::Enter)&&boss->GetPhase()&&!endingScene&&clear)
-		{
-			gameMusic.setBuffer(*RESOURCE_MGR.GetSoundBuffer("sound/comeBackHome.wav"));
-			gameMusic.setLoop(true);
-			gameMusic.play();
-			gameMusic.setVolume(30);
-			ending->SetActive(true);
-			endingAni.Play("Ending");
-			endingScene = true;
-		}
-		else if (INPUT_MGR.GetKeyDown(sf::Keyboard::Enter) && boss->GetPhase() && endingScene && clear)
-		{
-			endingAni.Stop();
-			SCENE_MGR.ChangeScene(SceneId::Title);
-		}
-		else if (INPUT_MGR.GetKeyDown(sf::Keyboard::Enter) && !clear)
-		{
-			SCENE_MGR.ChangeScene(SceneId::Title);
-		}
-	}
-
-	bossHp->SetSize({ boss->GetBossHp() * (800.f /boss->GetBossMaxHp()) ,3.f });
+	}	
 }
 
 void SceneGame::Draw(sf::RenderWindow& window)
@@ -677,6 +670,1035 @@ void SceneGame::Draw(sf::RenderWindow& window)
 void SceneGame::GetBullet(Bullet*& bullet)
 {
 	bullet = poolBullet.Get();
+}
+
+void SceneGame::PlayUpdate(float dt)
+{
+	Scene::Update(dt);
+
+	backGround->sprite.rotate(20 * dt);
+
+	timer -= dt;
+
+	if (!spawn)
+	{
+		spawnTimer -= dt;
+
+		if (spawnTimer < 0)
+		{
+			spawn = true;
+		}
+	}
+
+	if (timer < 115.f && timer > 113.f && spawn)
+	{
+			Monster* mob = poolMonster.Get();
+
+			mob->HitBoxSetting();
+
+			mob->SetSpeed(0.3f);
+			mob->sortLayer = 2;
+
+			sf::Vector2f center;
+			center.x = gameViewSize.left - 50.f;
+			center.y = gameViewSize.top + 50.f;
+			mob->SetStartPos(center);
+
+			sf::Vector2f mid;
+			mid.x = gameViewSize.left + gameViewSize.width / 2;
+			mid.y = gameViewSize.top + gameViewSize.height / 2;
+			mob->SetMiddlePos(mid);
+
+			sf::Vector2f end;
+			end.x = gameViewSize.left + gameViewSize.width + 50.f;
+			end.y = gameViewSize.top + gameViewSize.height + 50.f;
+
+			mob->SetEndPos(end);
+			mob->SetdelayTime(Utils::RandomRange(0.3f, 0.7f));
+			AddGo(mob);
+
+			spawn = false;
+			spawnTimer = 0.2f;
+	}
+	else if(timer < 112.f && timer > 110.f && spawn)
+	{
+		Monster* mob = poolMonster.Get();
+
+		mob->HitBoxSetting();
+
+		mob->SetSpeed(0.4f);
+		mob->sortLayer = 2;
+
+		sf::Vector2f center;
+		center.x = gameViewSize.left + gameViewSize.width + 50.f;
+		center.y = gameViewSize.top + 50.f;
+		mob->SetStartPos(center);
+
+		sf::Vector2f mid;
+		mid.x = gameViewSize.left + gameViewSize.width / 2;
+		mid.y = gameViewSize.top + gameViewSize.height / 2;
+		mob->SetMiddlePos(mid);
+
+		sf::Vector2f end;
+		end.x = gameViewSize.left - 50.f;
+		end.y = gameViewSize.top + gameViewSize.height + 50.f;
+
+		mob->SetEndPos(end);
+		mob->SetdelayTime(Utils::RandomRange(0.1f, 0.7f));
+
+		AddGo(mob);
+
+		spawn = false;
+		spawnTimer = 0.1f;
+	}
+	else if (timer < 108.f && timer > 107.f && spawn)
+	{
+		Monster* mob = poolMonster.Get();
+
+		mob->HitBoxSetting();
+
+		mob->SetSpeed(0.4f);
+		mob->sortLayer = 2;
+
+		sf::Vector2f center;
+		center.x = gameViewSize.left + gameViewSize.width + 50.f;
+		center.y = gameViewSize.top + 50.f;
+		mob->SetStartPos(center);
+
+		sf::Vector2f mid;
+		mid.x = gameViewSize.left + gameViewSize.width / 2;
+		mid.y = gameViewSize.top + gameViewSize.height / 2;
+		mob->SetMiddlePos(mid);
+
+		sf::Vector2f end;
+		end.x = gameViewSize.left + gameViewSize.width + 50.f;
+		end.y = gameViewSize.top + gameViewSize.height + 50.f;
+
+		mob->SetEndPos(end);
+		mob->SetdelayTime(Utils::RandomRange(0.1f, 0.7f));
+
+		AddGo(mob);
+
+		spawn = false;
+		spawnTimer = 0.1f;
+	}
+	else if (timer < 106.f && timer > 105.f && spawn)
+	{
+		Monster* mob = poolMonster.Get();
+
+		mob->HitBoxSetting();
+
+		mob->SetSpeed(0.4f);
+		mob->sortLayer = 2;
+
+		sf::Vector2f center;
+		center.x = gameViewSize.left - 50.f;
+		center.y = gameViewSize.top + 50.f;
+		mob->SetStartPos(center);
+
+		sf::Vector2f mid;
+		mid.x = gameViewSize.left + gameViewSize.width / 2;
+		mid.y = gameViewSize.top + gameViewSize.height / 2;
+		mob->SetMiddlePos(mid);
+
+		sf::Vector2f end;
+		end.x = gameViewSize.left - 50.f;
+		end.y = gameViewSize.top + gameViewSize.height + 50.f;
+
+		mob->SetEndPos(end);
+		mob->SetdelayTime(Utils::RandomRange(0.1f, 0.7f));
+
+		AddGo(mob);
+
+		spawn = false;
+		spawnTimer = 0.1f;
+	}
+	else if (timer < 104.f && timer > 103.f && spawn)
+	{
+		Monster* mob = poolMonster.Get();
+
+		mob->HitBoxSetting();
+
+		mob->SetSpeed(0.4f);
+		mob->sortLayer = 2;
+
+		sf::Vector2f center;
+		center.x = gameViewSize.left - 50.f;
+		center.y = gameViewSize.top + 50.f;
+		mob->SetStartPos(center);
+
+		sf::Vector2f mid;
+		mid.x = gameViewSize.left + gameViewSize.width / 2;
+		mid.y = gameViewSize.top + gameViewSize.height / 2;
+		mob->SetMiddlePos(mid);
+
+		sf::Vector2f end;
+		end.x = gameViewSize.left - 50.f;
+		end.y = gameViewSize.top + 50.f;
+
+		mob->SetEndPos(end);
+		mob->SetdelayTime(Utils::RandomRange(0.1f, 0.7f));
+
+		AddGo(mob);
+
+		spawn = false;
+		spawnTimer = 0.1f;
+		}
+	else if (timer < 102.f && timer > 101.f && spawn)
+	{
+		Monster* mob = poolMonster.Get();
+
+		mob->HitBoxSetting();
+
+		mob->SetSpeed(0.4f);
+		mob->sortLayer = 2;
+
+		sf::Vector2f center;
+		center.x = gameViewSize.left + gameViewSize.width + 50.f;
+		center.y = gameViewSize.top + 50.f;
+		mob->SetStartPos(center);
+
+		sf::Vector2f mid;
+		mid.x = gameViewSize.left + gameViewSize.width / 2;
+		mid.y = gameViewSize.top + gameViewSize.height / 2;
+		mob->SetMiddlePos(mid);
+
+		sf::Vector2f end;
+		end.x = gameViewSize.left + gameViewSize.width + 50.f;
+		end.y = gameViewSize.top + 50.f;
+
+		mob->SetEndPos(end);
+		mob->SetdelayTime(Utils::RandomRange(0.1f, 0.7f));
+
+
+		AddGo(mob);
+
+		spawn = false;
+		spawnTimer = 0.1f;
+		}
+	else if (timer < 100.f && timer > 95.f && spawn)
+	{
+		Monster* mob = poolMonster.Get();
+
+		mob->HitBoxSetting();
+
+		mob->SetSpeed(0.4f);
+		mob->sortLayer = 2;
+
+		sf::Vector2f center;
+		center.x = gameViewSize.left - 50.f;
+		center.y = gameViewSize.top + 50.f;
+		mob->SetStartPos(center);
+
+		sf::Vector2f mid;
+		mid.x = gameViewSize.left + gameViewSize.width;
+		mid.y = gameViewSize.top + gameViewSize.height;
+		mob->SetMiddlePos(mid);
+
+		sf::Vector2f end;
+		end.x = gameViewSize.left + gameViewSize.width + 50.f;
+		end.y = gameViewSize.top + 50.f;
+
+		mob->SetEndPos(end);
+		mob->SetdelayTime(Utils::RandomRange(0.1f, 0.7f));
+
+		AddGo(mob);
+
+		spawn = false;
+		spawnTimer = 0.1f;
+		}
+	else if (timer < 93.f && timer >88.f && spawn)
+	{
+		Monster* mob = poolMonster.Get();
+
+		mob->HitBoxSetting();
+
+		mob->SetSpeed(0.4f);
+		mob->sortLayer = 2;
+
+		sf::Vector2f center;
+		center.x = gameViewSize.left + gameViewSize.width + 50.f;
+		center.y = gameViewSize.top + 50.f;
+		mob->SetStartPos(center);
+
+		sf::Vector2f mid;
+		mid.x = gameViewSize.left;
+		mid.y = gameViewSize.top + gameViewSize.height;
+		mob->SetMiddlePos(mid);
+
+		sf::Vector2f end;
+		end.x = gameViewSize.left - 50.f;
+		end.y = gameViewSize.top + 50.f;
+
+		mob->SetEndPos(end);
+		mob->SetdelayTime(Utils::RandomRange(0.1f, 0.7f));
+
+		AddGo(mob);
+
+		spawn = false;
+		spawnTimer = 0.1f;
+		}
+	else if (timer < 85.f && timer >75.f && spawn)
+	{
+		if (flip)
+		{
+			Monster* mob = poolMonster.Get();
+
+			mob->HitBoxSetting();
+
+			mob->SetSpeed(0.3f);
+			mob->sortLayer = 2;
+
+			sf::Vector2f center;
+			center.x = gameViewSize.left - 50.f;
+			center.y = gameViewSize.top + 50.f;
+			mob->SetStartPos(center);
+
+			sf::Vector2f mid;
+			mid.x = gameViewSize.left;
+			mid.y = gameViewSize.top + gameViewSize.height;
+			mob->SetMiddlePos(mid);
+
+			sf::Vector2f end;
+			end.x = gameViewSize.left + gameViewSize.width + 50.f;
+			end.y = gameViewSize.top + 50.f;
+
+			mob->SetEndPos(end);
+			mob->SetdelayTime(Utils::RandomRange(0.1f, 0.7f));
+
+			AddGo(mob);
+
+			flip = false;
+			spawn = false;
+			spawnTimer = 0.1f;
+		}
+		else if (!flip)
+		{
+			Monster* mob = poolMonster.Get();
+
+			mob->HitBoxSetting();
+
+			mob->SetSpeed(0.3f);
+			mob->sortLayer = 2;
+
+			sf::Vector2f center;
+			center.x = gameViewSize.left + gameViewSize.width + 50.f;
+			center.y = gameViewSize.top + 50.f;
+			mob->SetStartPos(center);
+
+			sf::Vector2f mid;
+			mid.x = gameViewSize.left + gameViewSize.width;
+			mid.y = gameViewSize.top + gameViewSize.height;
+			mob->SetMiddlePos(mid);
+
+			sf::Vector2f end;
+			end.x = gameViewSize.left - 50.f;
+			end.y = gameViewSize.top + 50.f;
+
+			mob->SetEndPos(end);
+			mob->SetdelayTime(Utils::RandomRange(0.1f, 0.7f));
+
+			AddGo(mob);
+
+			flip = true;
+			spawn = false;
+			spawnTimer = 0.1f;
+		}
+	}
+	else if (timer < 74.f && timer >60.f && spawn)
+	{
+		if (flip)
+		{
+			Monster* mob = poolMonster.Get();
+
+			mob->HitBoxSetting();
+
+			mob->SetSpeed(0.3f);
+			mob->sortLayer = 2;
+
+			sf::Vector2f center;
+			center.x = gameViewSize.left - 50.f;
+			center.y = gameViewSize.top + 50.f;
+			mob->SetStartPos(center);
+
+			sf::Vector2f mid;
+			mid.x = gameViewSize.left + gameViewSize.width;
+			mid.y = gameViewSize.top + gameViewSize.height;
+			mob->SetMiddlePos(mid);
+
+			sf::Vector2f end;
+			end.x = gameViewSize.left - 50.f;
+			end.y = gameViewSize.top + gameViewSize.height;
+
+			mob->SetEndPos(end);
+			mob->SetdelayTime(Utils::RandomRange(0.1f, 0.7f));
+
+			AddGo(mob);
+
+			flip = false;
+			spawn = false;
+			spawnTimer = 0.1f;
+		}
+		else if (!flip)
+		{
+			Monster* mob = poolMonster.Get();
+
+			mob->HitBoxSetting();
+
+			mob->SetSpeed(0.3f);
+			mob->sortLayer = 2;
+
+			sf::Vector2f center;
+			center.x = gameViewSize.left + gameViewSize.width + 50.f;
+			center.y = gameViewSize.top + 50.f;
+			mob->SetStartPos(center);
+
+			sf::Vector2f mid;
+			mid.x = gameViewSize.left;
+			mid.y = gameViewSize.top + gameViewSize.height;
+			mob->SetMiddlePos(mid);
+
+			sf::Vector2f end;
+			end.x = gameViewSize.left + gameViewSize.width + 50.f;
+			end.y = gameViewSize.top + gameViewSize.height;
+
+			mob->SetEndPos(end);
+			mob->SetdelayTime(Utils::RandomRange(0.1f, 0.7f));
+
+			AddGo(mob);
+
+			flip = true;
+			spawn = false;
+			spawnTimer = 0.1f;
+		}
+		}
+	else if (timer < 59.f && timer >53.f && spawn)
+	{
+		if (flip)
+		{
+			Monster* mob = poolMonster.Get();
+
+			mob->HitBoxSetting();
+
+			mob->SetSpeed(0.3f);
+			mob->sortLayer = 2;
+
+			sf::Vector2f center;
+			center.x = gameViewSize.left - 50.f;
+			center.y = gameViewSize.top + gameViewSize.height;
+			mob->SetStartPos(center);
+
+			sf::Vector2f mid;
+			mid.x = gameViewSize.left + gameViewSize.width;
+			mid.y = gameViewSize.top + gameViewSize.height;
+			mob->SetMiddlePos(mid);
+
+			sf::Vector2f end;
+			end.x = gameViewSize.left - 50.f;
+			end.y = gameViewSize.top + 50.f;
+
+			mob->SetEndPos(end);
+			mob->SetdelayTime(Utils::RandomRange(0.1f, 0.7f));
+
+			AddGo(mob);
+
+			flip = false;
+			spawn = false;
+			spawnTimer = 0.1f;
+		}
+		else if (!flip)
+		{
+			Monster* mob = poolMonster.Get();
+
+			mob->HitBoxSetting();
+
+			mob->SetSpeed(0.3f);
+			mob->sortLayer = 2;
+
+			sf::Vector2f center;
+			center.x = gameViewSize.left + gameViewSize.width + 50.f;
+			center.y = gameViewSize.top + gameViewSize.height;
+			mob->SetStartPos(center);
+
+			sf::Vector2f mid;
+			mid.x = gameViewSize.left;
+			mid.y = gameViewSize.top + gameViewSize.height;
+			mob->SetMiddlePos(mid);
+
+			sf::Vector2f end;
+			end.x = gameViewSize.left + gameViewSize.width + 50.f;
+			end.y = gameViewSize.top + 50.f;
+
+			mob->SetEndPos(end);
+			mob->SetdelayTime(Utils::RandomRange(0.1f, 0.7f));
+
+			AddGo(mob);
+
+			flip = true;
+			spawn = false;
+			spawnTimer = 0.1f;
+		}
+		}
+	else if (timer < 52.f && timer > 50.f && spawn)
+	{
+		Monster* mob = poolMonster.Get();
+
+		mob->HitBoxSetting();
+
+		mob->SetSpeed(0.3f);
+		mob->sortLayer = 2;
+
+		sf::Vector2f center;
+		center.x = gameViewSize.left + gameViewSize.width + 50.f;
+		center.y = gameViewSize.top + 50.f;
+		mob->SetStartPos(center);
+
+		sf::Vector2f mid;
+		mid.x = gameViewSize.left + gameViewSize.width / 2;
+		mid.y = gameViewSize.top + gameViewSize.height / 2;
+		mob->SetMiddlePos(mid);
+
+		sf::Vector2f end;
+		end.x = gameViewSize.left - 50.f;
+		end.y = gameViewSize.top + gameViewSize.height + 50.f;
+
+		mob->SetEndPos(end);
+		mob->SetdelayTime(Utils::RandomRange(0.1f, 0.7f));
+
+		AddGo(mob);
+
+		spawn = false;
+		spawnTimer = 0.1f;
+	}
+	else if (timer < 49.f && timer > 47.f && spawn)
+	{
+		Monster* mob = poolMonster.Get();
+
+		mob->HitBoxSetting();
+
+		mob->SetSpeed(0.3f);
+		mob->sortLayer = 2;
+
+		sf::Vector2f center;
+		center.x = gameViewSize.left - 50.f;
+		center.y = gameViewSize.top + 50.f;
+		mob->SetStartPos(center);
+
+		sf::Vector2f mid;
+		mid.x = gameViewSize.left + gameViewSize.width;
+		mid.y = gameViewSize.top + gameViewSize.height;
+		mob->SetMiddlePos(mid);
+
+		sf::Vector2f end;
+		end.x = gameViewSize.left + gameViewSize.width + 50.f;
+		end.y = gameViewSize.top + 50.f;
+
+		mob->SetEndPos(end);
+		mob->SetdelayTime(Utils::RandomRange(0.1f, 0.7f));
+
+		AddGo(mob);
+
+		spawn = false;
+		spawnTimer = 0.1f;
+		}
+	else if (timer < 46.f && timer >44.f && spawn)
+	{
+		Monster* mob = poolMonster.Get();
+
+		mob->HitBoxSetting();
+
+		mob->SetSpeed(0.3f);
+		mob->sortLayer = 2;
+
+		sf::Vector2f center;
+		center.x = gameViewSize.left + gameViewSize.width + 50.f;
+		center.y = gameViewSize.top + 50.f;
+		mob->SetStartPos(center);
+
+		sf::Vector2f mid;
+		mid.x = gameViewSize.left;
+		mid.y = gameViewSize.top + gameViewSize.height;
+		mob->SetMiddlePos(mid);
+
+		sf::Vector2f end;
+		end.x = gameViewSize.left - 50.f;
+		end.y = gameViewSize.top + 50.f;
+
+		mob->SetEndPos(end);
+		mob->SetdelayTime(Utils::RandomRange(0.1f, 0.7f));
+
+		AddGo(mob);
+
+		spawn = false;
+		spawnTimer = 0.1f;
+		}
+	else if (timer < 43.f && timer > 40.f && spawn)
+	{
+		Monster* mob = poolMonster.Get();
+
+		mob->HitBoxSetting();
+
+		mob->SetSpeed(0.3f);
+		mob->sortLayer = 2;
+
+		sf::Vector2f center;
+		center.x = gameViewSize.left + gameViewSize.width + 50.f;
+		center.y = gameViewSize.top + 50.f;
+		mob->SetStartPos(center);
+
+		sf::Vector2f mid;
+		mid.x = gameViewSize.left + gameViewSize.width / 2;
+		mid.y = gameViewSize.top + gameViewSize.height / 2;
+		mob->SetMiddlePos(mid);
+
+		sf::Vector2f end;
+		end.x = gameViewSize.left + gameViewSize.width + 50.f;
+		end.y = gameViewSize.top + 50.f;
+
+		mob->SetEndPos(end);
+		mob->SetdelayTime(Utils::RandomRange(0.1f, 0.7f));
+
+		AddGo(mob);
+
+		spawn = false;
+		spawnTimer = 0.1f;
+		}
+	else if (timer < 39.f && timer > 36.f && spawn)
+	{
+		Monster* mob = poolMonster.Get();
+
+		mob->HitBoxSetting();
+
+		mob->SetSpeed(0.3f);
+		mob->sortLayer = 2;
+
+		sf::Vector2f center;
+		center.x = gameViewSize.left + gameViewSize.width + 50.f;
+		center.y = gameViewSize.top + 50.f;
+		mob->SetStartPos(center);
+
+		sf::Vector2f mid;
+		mid.x = gameViewSize.left + gameViewSize.width / 2;
+		mid.y = gameViewSize.top + gameViewSize.height / 2;
+		mob->SetMiddlePos(mid);
+
+		sf::Vector2f end;
+		end.x = gameViewSize.left - 50.f;
+		end.y = gameViewSize.top + gameViewSize.height + 50.f;
+
+		mob->SetEndPos(end);
+		mob->SetdelayTime(Utils::RandomRange(0.1f, 0.7f));
+
+		AddGo(mob);
+
+		spawn = false;
+		spawnTimer = 0.1f;
+		}
+	else if (timer < 35.f && timer >30.f && spawn)
+	{
+		if (flip)
+		{
+			Monster* mob = poolMonster.Get();
+
+			mob->HitBoxSetting();
+
+			mob->SetSpeed(0.3f);
+			mob->sortLayer = 2;
+
+			sf::Vector2f center;
+			center.x = gameViewSize.left - 50.f;
+			center.y = gameViewSize.top + 50.f;
+			mob->SetStartPos(center);
+
+			sf::Vector2f mid;
+			mid.x = gameViewSize.left;
+			mid.y = gameViewSize.top + gameViewSize.height;
+			mob->SetMiddlePos(mid);
+
+			sf::Vector2f end;
+			end.x = gameViewSize.left + gameViewSize.width + 50.f;
+			end.y = gameViewSize.top + 50.f;
+
+			mob->SetEndPos(end);
+			mob->SetdelayTime(Utils::RandomRange(0.1f, 0.7f));
+
+			AddGo(mob);
+
+			flip = false;
+			spawn = false;
+			spawnTimer = 0.1f;
+		}
+		else if (!flip)
+		{
+			Monster* mob = poolMonster.Get();
+
+			mob->HitBoxSetting();
+
+			mob->SetSpeed(0.3f);
+			mob->sortLayer = 2;
+
+			sf::Vector2f center;
+			center.x = gameViewSize.left + gameViewSize.width + 50.f;
+			center.y = gameViewSize.top + 50.f;
+			mob->SetStartPos(center);
+
+			sf::Vector2f mid;
+			mid.x = gameViewSize.left + gameViewSize.width;
+			mid.y = gameViewSize.top + gameViewSize.height;
+			mob->SetMiddlePos(mid);
+
+			sf::Vector2f end;
+			end.x = gameViewSize.left - 50.f;
+			end.y = gameViewSize.top + 50.f;
+
+			mob->SetEndPos(end);
+
+			mob->SetdelayTime(Utils::RandomRange(0.1f, 0.7f));
+
+			AddGo(mob);
+
+			flip = true;
+			spawn = false;
+			spawnTimer = 0.1f;
+		}
+		}
+	else if (timer < 29.f && timer >24.f && spawn)
+	{
+		if (flip)
+		{
+			Monster* mob = poolMonster.Get();
+
+			mob->HitBoxSetting();
+
+			mob->SetSpeed(0.3f);
+			mob->sortLayer = 2;
+
+			sf::Vector2f center;
+			center.x = gameViewSize.left - 50.f;
+			center.y = gameViewSize.top + 50.f;
+			mob->SetStartPos(center);
+
+			sf::Vector2f mid;
+			mid.x = gameViewSize.left;
+			mid.y = gameViewSize.top + gameViewSize.height;
+			mob->SetMiddlePos(mid);
+
+			sf::Vector2f end;
+			end.x = gameViewSize.left + gameViewSize.width + 50.f;
+			end.y = gameViewSize.top + 50.f;
+
+			mob->SetEndPos(end);
+			mob->SetdelayTime(Utils::RandomRange(0.1f, 0.7f));
+
+			AddGo(mob);
+
+			flip = false;
+			spawn = false;
+			spawnTimer = 0.1f;
+		}
+		else if (!flip)
+		{
+			Monster* mob = poolMonster.Get();
+
+			mob->HitBoxSetting();
+
+			mob->SetSpeed(0.3f);
+			mob->sortLayer = 2;
+
+			sf::Vector2f center;
+			center.x = gameViewSize.left - 50.f;
+			center.y = gameViewSize.top + 50.f;
+			mob->SetStartPos(center);
+
+			sf::Vector2f mid;
+			mid.x = gameViewSize.left + gameViewSize.width;
+			mid.y = gameViewSize.top + gameViewSize.height;
+			mob->SetMiddlePos(mid);
+
+			sf::Vector2f end;
+			end.x = gameViewSize.left + gameViewSize.width + 50.f;
+			end.y = gameViewSize.top + 50.f;
+
+			mob->SetEndPos(end);
+			mob->SetdelayTime(Utils::RandomRange(0.1f, 0.7f));
+
+			AddGo(mob);
+
+			flip = true;
+			spawn = false;
+			spawnTimer = 0.1f;
+		}
+		}
+	else if (timer < 22.f && timer >18.f && spawn)
+	{
+		if (flip)
+		{
+			Monster* mob = poolMonster.Get();
+
+			mob->HitBoxSetting();
+
+			mob->SetSpeed(0.3f);
+			mob->sortLayer = 2;
+
+			sf::Vector2f center;
+			center.x = gameViewSize.left - 50.f;
+			center.y = gameViewSize.top + gameViewSize.height;
+			mob->SetStartPos(center);
+
+			sf::Vector2f mid;
+			mid.x = gameViewSize.left + gameViewSize.width;
+			mid.y = gameViewSize.top + gameViewSize.height;
+			mob->SetMiddlePos(mid);
+
+			sf::Vector2f end;
+			end.x = gameViewSize.left - 50.f;
+			end.y = gameViewSize.top + 50.f;
+
+			mob->SetEndPos(end);
+			mob->SetdelayTime(Utils::RandomRange(0.1f, 0.7f));
+
+			AddGo(mob);
+
+			flip = false;
+			spawn = false;
+			spawnTimer = 0.1f;
+		}
+		else if (!flip)
+		{
+			Monster* mob = poolMonster.Get();
+
+			mob->HitBoxSetting();
+
+			mob->SetSpeed(0.3f);
+			mob->sortLayer = 2;
+
+			sf::Vector2f center;
+			center.x = gameViewSize.left + gameViewSize.width + 50.f;
+			center.y = gameViewSize.top + gameViewSize.height;
+			mob->SetStartPos(center);
+
+			sf::Vector2f mid;
+			mid.x = gameViewSize.left;
+			mid.y = gameViewSize.top + gameViewSize.height;
+			mob->SetMiddlePos(mid);
+
+			sf::Vector2f end;
+			end.x = gameViewSize.left + gameViewSize.width + 50.f;
+			end.y = gameViewSize.top + 50.f;
+
+			mob->SetEndPos(end);
+			mob->SetdelayTime(Utils::RandomRange(0.1f, 0.7f));
+
+			AddGo(mob);
+
+			flip = true;
+			spawn = false;
+			spawnTimer = 0.1f;
+		}
+		}
+	else if (timer < 17.f && timer > 12.f && spawn)
+	{
+		Monster* mob = poolMonster.Get();
+
+		mob->HitBoxSetting();
+
+		mob->SetSpeed(0.3f);
+		mob->sortLayer = 2;
+
+		sf::Vector2f center;
+		center.x = gameViewSize.left + gameViewSize.width + 50.f;
+		center.y = gameViewSize.top + 50.f;
+		mob->SetStartPos(center);
+
+		sf::Vector2f mid;
+		mid.x = gameViewSize.left + gameViewSize.width / 2;
+		mid.y = gameViewSize.top + gameViewSize.height / 2;
+		mob->SetMiddlePos(mid);
+
+		sf::Vector2f end;
+		end.x = gameViewSize.left - 50.f;
+		end.y = gameViewSize.top + gameViewSize.height + 50.f;
+
+		mob->SetEndPos(end);
+		mob->SetdelayTime(Utils::RandomRange(0.1f, 0.7f));
+
+		AddGo(mob);
+
+		spawn = false;
+		spawnTimer = 0.1f;
+	}
+	else if (timer < 10.f && timer >3.f && spawn)
+	{
+		Monster* mob = poolMonster.Get();
+
+		mob->HitBoxSetting();
+
+		mob->SetSpeed(0.3f);
+		mob->sortLayer = 2;
+
+		sf::Vector2f center;
+		center.x = gameViewSize.left + gameViewSize.width + 50.f;
+		center.y = gameViewSize.top + 50.f;
+		mob->SetStartPos(center);
+
+		sf::Vector2f mid;
+		mid.x = gameViewSize.left;
+		mid.y = gameViewSize.top + gameViewSize.height;
+		mob->SetMiddlePos(mid);
+
+		sf::Vector2f end;
+		end.x = gameViewSize.left - 50.f;
+		end.y = gameViewSize.top + 50.f;
+
+		mob->SetEndPos(end);
+		mob->SetdelayTime(Utils::RandomRange(0.1f, 0.7f));
+
+		AddGo(mob);
+
+		spawn = false;
+		spawnTimer = 0.1f;
+		}
+	if (timer < 0)
+	{
+		for (int i = 0; i < numberUiFont.size(); ++i)
+		{
+			if (!numberUiFont[i]->GetActive())
+			{
+				numberUiFont[i]->SetActive(true);
+			}
+		}
+
+		timer = 90.f;
+		boss->SetActive(true);
+		bossName->SetActive(true);
+		bossHp->SetActive(true);
+		currentUpdate = UpdateState::Boss;
+		return;
+	}
+
+	if (player->GetLife() < 1)
+	{
+		playing = false;
+		player->SetPlaying(playing);
+		clearFailed->SetActive(true);
+		currentUpdate = UpdateState::Dead;
+		return;
+	}
+}
+
+void SceneGame::PauseUpdate(float dt)
+{
+	Pause();
+
+	PauseMenu(dt);
+}
+
+void SceneGame::EventUpdate(float dt)
+{
+	changeTimer += dt;
+	if (!scaleChange)
+	{
+		backGround->sprite.setColor(sf::Color(255, 255, 255, (1.f - (changeTimer / changeClearTime)) * 255));
+	}
+	else if (scaleChange)
+	{
+		boss->SetHP(boss->GetBossHp() + (changeTimer / changeClearTime) *
+			(boss->GetBossMaxHp() - boss->GetBossHp()));
+		backGround->sprite.setScale(backGround->sprite.getScale() +
+			(changeTimer / changeClearTime) *
+			(backGroundScale - backGround->sprite.getScale()));
+	}
+	if (changeClearTime <= changeTimer)
+	{
+		if (!scaleChange)
+		{
+			scaleChange = true;
+			backGround->textureId = ("graphics/stage06c.png");
+			backGround->sprite.setTexture(*RESOURCE_MGR.GetTexture("graphics/stage06c.png"));
+			backGround->sprite.setColor(sf::Color(255, 255, 255, 255));
+			backGround->sprite.setTextureRect(sf::IntRect(0, 0, 512, 512));
+			backGround->sprite.setScale(7.f, 7.f);
+			backGround->SetOrigin(Origins::MC);
+
+			player->ActiveHitbox(true);
+			boss->ActiveHitbox(true);
+			player->ActiveGraze(true);
+			player->ActiveGrazebox(true);
+			boss->SetPhaseEffect(true);
+			changeTimer = 0.f;
+		}
+		else if (scaleChange)
+		{
+			gameMusic.setBuffer(*RESOURCE_MGR.GetSoundBuffer("sound/Nuclear_Fusion.wav"));
+			gameMusic.setLoop(true);
+			gameMusic.play();
+			gameMusic.setVolume(20);
+
+			phaseChange = false;
+			player->SetChangePhase(false);
+			boss->SetAction(false);
+			currentUpdate = UpdateState::Boss;
+		}
+	}
+}
+
+void SceneGame::BossUpdate(float dt)
+{
+	Scene::Update(dt);
+
+	timer -= dt;
+
+	if (player->GetLife() < 1)
+	{
+		playing = false;
+		player->SetPlaying(playing);
+		clearFailed->SetActive(true);
+		currentUpdate = UpdateState::Dead;
+		return;
+	}
+	else if (timer < 0.f)
+	{
+		playing = false;
+		player->SetPlaying(playing);
+		clearFailed->SetActive(true);
+		currentUpdate = UpdateState::Dead;
+		return;
+	}
+
+	PhaseChange();
+
+	backGround->sprite.rotate(20 * dt);
+
+	bossHp->SetSize({ boss->GetBossHp() * (800.f / boss->GetBossMaxHp()) ,3.f });
+
+	TimerFont();
+}
+void SceneGame::EndingUpdate(float dt)
+{
+	endingAni.Update(dt);
+	if (INPUT_MGR.GetKeyDown(sf::Keyboard::Enter)&&boss->GetPhase()&&!endingScene&&clear)
+	{
+		gameMusic.setBuffer(*RESOURCE_MGR.GetSoundBuffer("sound/comeBackHome.wav"));
+		gameMusic.setLoop(true);
+		gameMusic.play();
+		gameMusic.setVolume(30);
+		ending->SetActive(true);
+		endingAni.Play("Ending");
+		endingScene = true;
+	}
+	else if (INPUT_MGR.GetKeyDown(sf::Keyboard::Enter) && boss->GetPhase() && endingScene && clear)
+	{
+		endingAni.Stop();
+		SCENE_MGR.ChangeScene(SceneId::Title);
+	}
+}
+
+void SceneGame::DeadUpdate(float dt)
+{
+	if (INPUT_MGR.GetKeyDown(sf::Keyboard::Enter) && !clear)
+	{
+		SCENE_MGR.ChangeScene(SceneId::Title);
+	}
 }
 
 void SceneGame::Pause()
@@ -720,6 +1742,9 @@ void SceneGame::PauseMenu(float dt)
 				{
 					se_pickSound.play();
 					pause = !pause;
+					Pause();
+					currentUpdate = UpdateState::Play;
+					return;
 				}
 				break;
 			case 1:
@@ -898,6 +1923,9 @@ void SceneGame::PhaseChange()
 		boss->ActiveHitbox(false);
 		player->ActiveGraze(false);
 		player->ActiveGrazebox(false);
+
+		currentUpdate = UpdateState::Event;
+		return;
 	}
 	else if (boss->GetBossHp() <= 0 && boss->GetPhase())
 	{
@@ -908,6 +1936,7 @@ void SceneGame::PhaseChange()
 		boss->SetAction(true);
 		clear = true;
 		player->SetPlaying(playing);
+		currentUpdate = UpdateState::Ending;
 	}
 }
 void SceneGame::TimerFont()

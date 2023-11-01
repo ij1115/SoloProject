@@ -35,7 +35,6 @@ void Bullet::Reset()
 	useRotate = true;
 	sprite.setRotation(0.0f);
 	dir = { 0.f,0.f };
-
 	sortLayer = 1;
 
 }
@@ -66,7 +65,10 @@ void Bullet::Update(float dt)
 			sprite.rotate(720 * dt);
 			if (this->type == Types::Type_Two)
 			{
-				SetDirBossPos();
+				if (!boss->GetActive() && mob != nullptr)
+					SetDirMobPos();
+				else if(boss->GetActive())
+					SetDirBossPos();
 			}
 		}
 
@@ -98,7 +100,7 @@ void Bullet::Update(float dt)
 		}
 		CheckDelay();
 
-		if (user == User::Player && BossCollider() && type == Types::Type_One)
+		if (user == User::Player && BossCollider() && type == Types::Type_One && boss->GetActive())
 		{
 			BulletEffect* effect = effectPool->Get();
 			effect->textureId = "graphics/Player.png";
@@ -114,11 +116,12 @@ void Bullet::Update(float dt)
 			SCENE_MGR.GetCurrScene()->RemoveGo(this);
 			SCENE_MGR.GetCurrScene()->RemoveGo(this->hitbox);
 			hitboxPool->Return(this->hitbox);
+			this->Reset();
 			pool->Return(this);
 			player->PlusScore(1);
 			boss->BossDamage(7);
 		}
-		else if (user == User::Player && BossCollider() && type == Types::Type_Two)
+		else if (user == User::Player && BossCollider() && type == Types::Type_Two && boss->GetActive())
 		{
 			BulletEffect* effect = effectPool->Get();
 			effect->textureId = "graphics/etama6.png";
@@ -132,15 +135,57 @@ void Bullet::Update(float dt)
 			SCENE_MGR.GetCurrScene()->RemoveGo(this);
 			SCENE_MGR.GetCurrScene()->RemoveGo(this->hitbox);
 			hitboxPool->Return(this->hitbox);
+			this->Reset();
 			pool->Return(this);
 			player->PlusScore(1);
 			boss->BossDamage(4);
+		}
+		else if(user == User::Player && MonsterCollider() && type == Types::Type_One)
+		{
+			BulletEffect* effect = effectPool->Get();
+			effect->textureId = "graphics/Player.png";
+			effect->sprite.setTexture(*RESOURCE_MGR.GetTexture("graphics/Player.png"));
+			effect->sprite.setTextureRect(sf::IntRect(177, 160, 16, 17));
+			effect->SetPosition(this->GetPosition());
+			effect->SetOrigin(Origins::MC);
+			effect->SetDirection({ 0.f, -1.f });
+			effect->SetSpeed(50.f);
+			effect->SetDuration(0.3f);
+			effect->sortLayer = 3;
+			SCENE_MGR.GetCurrScene()->AddGo(effect);
+			SCENE_MGR.GetCurrScene()->RemoveGo(this);
+			SCENE_MGR.GetCurrScene()->RemoveGo(this->hitbox);
+			hitboxPool->Return(this->hitbox);
+			this->Reset();
+			pool->Return(this);
+			mob->MonsterDamage(7);
+			mob = nullptr;
+		}
+		else if (user == User::Player && MonsterCollider() && type == Types::Type_Two)
+		{
+			BulletEffect* effect = effectPool->Get();
+			effect->textureId = "graphics/etama6.png";
+			effect->sprite.setTexture(*RESOURCE_MGR.GetTexture("graphics/etama6.png"));
+			effect->sprite.setTextureRect(sf::IntRect(35, 162, 26, 26));
+			effect->SetPosition(this->GetPosition());
+			effect->SetOrigin(Origins::MC);
+			effect->SetDuration(0.3f);
+			effect->sortLayer = 3;
+			SCENE_MGR.GetCurrScene()->AddGo(effect);
+			SCENE_MGR.GetCurrScene()->RemoveGo(this);
+			SCENE_MGR.GetCurrScene()->RemoveGo(this->hitbox);
+			hitboxPool->Return(this->hitbox);
+			this->Reset();
+			pool->Return(this);
+			mob->MonsterDamage(4);
+			mob = nullptr;
 		}
 		else if (user == User::Enemy && PlayerCollider() && !player->GetHitDelay())
 		{
 			SCENE_MGR.GetCurrScene()->RemoveGo(this);
 			SCENE_MGR.GetCurrScene()->RemoveGo(this->hitbox);
 			hitboxPool->Return(this->hitbox);
+			this->Reset();
 			pool->Return(this);
 
 			for (int i = 0; i < 5; ++i)
@@ -165,6 +210,25 @@ void Bullet::Update(float dt)
 
 		Destroy();
 	}
+}
+
+void Bullet::SetDirMobPos()
+{
+		for (auto a : monsterPool->GetUseList())
+		{
+			if (a == mob)
+			{
+				dir = Utils::Normalize(mob->GetPosition() - this->position);
+				return;
+			}
+		}
+
+		this->hitbox->Reset();
+		this->Reset();
+		SCENE_MGR.GetCurrScene()->RemoveGo(this);
+		SCENE_MGR.GetCurrScene()->RemoveGo(this->hitbox);
+		hitboxPool->Return(this->hitbox);
+		pool->Return(this);
 }
 
 void Bullet::CheckDelay()
@@ -310,6 +374,15 @@ void Bullet::Destroy()
 		hitboxPool->Return(this->hitbox);
 		pool->Return(this);
 	}
+	else if (this->dir.x==0 && this->dir.y == 0 && type == Types::Type_Two)
+	{
+		this->hitbox->Reset();
+		this->Reset();
+		SCENE_MGR.GetCurrScene()->RemoveGo(this);
+		SCENE_MGR.GetCurrScene()->RemoveGo(this->hitbox);
+		hitboxPool->Return(this->hitbox);
+		pool->Return(this);
+	}
 }
 
 bool Bullet::GrazeCollider()
@@ -334,6 +407,20 @@ bool Bullet::BossCollider()
 	}
 
 	return false;
+}
+
+bool Bullet::MonsterCollider()
+{
+	for (auto go : monsterPool->GetUseList())
+	{
+		float disSqur = Utils::Distance(this->hitbox->GetPosition(), go->GetPosition());
+		float combinRadius = this->hitbox->GetRaidus() + go->GetHitBox();
+		if (disSqur <= combinRadius)
+		{
+			mob = go;
+			return true;
+		}
+	}
 }
 
 bool Bullet::PlayerCollider()
