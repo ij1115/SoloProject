@@ -109,41 +109,13 @@ public:
 
 	//BulletFire
 	void Fire();
-	void Fire2();
-	void Fire3();
-	void Fire4(int c);
-	void Fire5(int c);
-	void Fire6(int c);
-	void Fire7();
-	void Fire8();
+
 
 	//패턴 설정 값
-	void SetStartMovePosX(float x) { this->startMovePos.x = x; };
-	void SetStartMovePosY(float y) { this->startMovePos.y = y; };
-	void SetMiddleMovePosX(float x) { this->middleMovePos.x = x; };
-	void SetMiddleMovePosY(float y) { this->middleMovePos.y = y; };
-	void SetEndMovePosX(float x) { this->endMovePos.x = x; };
-	void SetEndMovePosY(float y) { this->endMovePos.y = y; };
 	void SetSpeed(float s) { this->speed = s; }
-	void SetCurve() {
-		this->curve = true;
-		this->strike = false;
-	}
-	void SetStrike() {
-		this->curve = false;
-		this->strike = true;
-	}
-	void PoseTrue() { if (!bossPrivatePose) this->bossPrivatePose = true; }
-	void PoseFalse() { if (bossPrivatePose) this->bossPrivatePose = false; }
+
 	void SetdelayTime(float t);
-	void TimeOut() {
-		if (delayTime < 0.f && delay)
-		{
-			this->delay = false;
-			this->count++;
-		}
-	}
-	void CountUp() { this->count++; }
+
 
 };
 

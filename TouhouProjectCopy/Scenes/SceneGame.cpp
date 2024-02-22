@@ -726,7 +726,7 @@ void SceneGame::PlayUpdate(float dt)
 
 		mob->HitBoxSetting();
 
-		mob->SetSpeed(0.4f);
+		mob->SetSpeed(0.3f);
 		mob->sortLayer = 2;
 
 		sf::Vector2f center;
@@ -749,7 +749,7 @@ void SceneGame::PlayUpdate(float dt)
 		AddGo(mob);
 
 		spawn = false;
-		spawnTimer = 0.1f;
+		spawnTimer = 0.2f;
 	}
 	else if (timer < 108.f && timer > 107.f && spawn)
 	{
@@ -819,7 +819,7 @@ void SceneGame::PlayUpdate(float dt)
 
 		mob->HitBoxSetting();
 
-		mob->SetSpeed(0.4f);
+		mob->SetSpeed(0.3f);
 		mob->sortLayer = 2;
 
 		sf::Vector2f center;
@@ -842,7 +842,7 @@ void SceneGame::PlayUpdate(float dt)
 		AddGo(mob);
 
 		spawn = false;
-		spawnTimer = 0.1f;
+		spawnTimer = 0.3f;
 		}
 	else if (timer < 102.f && timer > 101.f && spawn)
 	{
@@ -850,7 +850,7 @@ void SceneGame::PlayUpdate(float dt)
 
 		mob->HitBoxSetting();
 
-		mob->SetSpeed(0.4f);
+		mob->SetSpeed(0.3f);
 		mob->sortLayer = 2;
 
 		sf::Vector2f center;
@@ -874,7 +874,7 @@ void SceneGame::PlayUpdate(float dt)
 		AddGo(mob);
 
 		spawn = false;
-		spawnTimer = 0.1f;
+		spawnTimer = 0.3f;
 		}
 	else if (timer < 100.f && timer > 95.f && spawn)
 	{
@@ -882,7 +882,7 @@ void SceneGame::PlayUpdate(float dt)
 
 		mob->HitBoxSetting();
 
-		mob->SetSpeed(0.4f);
+		mob->SetSpeed(0.3f);
 		mob->sortLayer = 2;
 
 		sf::Vector2f center;
@@ -913,7 +913,7 @@ void SceneGame::PlayUpdate(float dt)
 
 		mob->HitBoxSetting();
 
-		mob->SetSpeed(0.4f);
+		mob->SetSpeed(0.3f);
 		mob->sortLayer = 2;
 
 		sf::Vector2f center;
@@ -936,7 +936,7 @@ void SceneGame::PlayUpdate(float dt)
 		AddGo(mob);
 
 		spawn = false;
-		spawnTimer = 0.1f;
+		spawnTimer = 0.2f;
 		}
 	else if (timer < 85.f && timer >75.f && spawn)
 	{
@@ -1037,7 +1037,7 @@ void SceneGame::PlayUpdate(float dt)
 
 			flip = false;
 			spawn = false;
-			spawnTimer = 0.1f;
+			spawnTimer = 0.2f;
 		}
 		else if (!flip)
 		{
@@ -1069,7 +1069,7 @@ void SceneGame::PlayUpdate(float dt)
 
 			flip = true;
 			spawn = false;
-			spawnTimer = 0.1f;
+			spawnTimer = 0.2f;
 		}
 		}
 	else if (timer < 59.f && timer >53.f && spawn)
@@ -1104,7 +1104,7 @@ void SceneGame::PlayUpdate(float dt)
 
 			flip = false;
 			spawn = false;
-			spawnTimer = 0.1f;
+			spawnTimer = 0.2f;
 		}
 		else if (!flip)
 		{
@@ -1136,7 +1136,7 @@ void SceneGame::PlayUpdate(float dt)
 
 			flip = true;
 			spawn = false;
-			spawnTimer = 0.1f;
+			spawnTimer = 0.2f;
 		}
 		}
 	else if (timer < 52.f && timer > 50.f && spawn)
@@ -1637,6 +1637,7 @@ void SceneGame::EventUpdate(float dt)
 			phaseChange = false;
 			player->SetChangePhase(false);
 			boss->SetAction(false);
+			timer = 90.f;
 			currentUpdate = UpdateState::Boss;
 		}
 	}
